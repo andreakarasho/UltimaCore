@@ -153,9 +153,7 @@ namespace UltimaCore.Graphics
                     {
                         Offset = (int)(offset + headerLength),
                         CompressedLength = compressedLength,
-                        DecompressedLength = decompressedLength,
-                        File = this,
-                        Path = this.Path
+                        DecompressedLength = decompressedLength
                     };
 
                     hashes.Add(hash, data);
@@ -167,7 +165,6 @@ namespace UltimaCore.Graphics
                 for (int grpID = 0; grpID < 100; grpID++)
                 {
                     string hashstring = string.Format("build/animationlegacyframe/{0:D6}/{1:D2}.bin", animID, grpID);
-
                     ulong hash = UOFileUop.CreateHash(hashstring);
 
                     if (hashes.TryGetValue(hash, out var data))
@@ -186,7 +183,5 @@ namespace UltimaCore.Graphics
         public int Offset { get; set; }
         public int CompressedLength { get; set; }
         public int DecompressedLength { get; set; }
-        public UOFile File { get; set; }
-        public string Path { get; set; }
     }
 }
