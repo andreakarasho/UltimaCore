@@ -15,8 +15,11 @@ namespace Sample
 
         static void Main(string[] args)
         {
-            Art art = new Art(_path);
-            byte[] pixels = art.ReadStaticArt(19781);
+            FileManager.UoFolderPath = _path;
+
+            Art.Load();
+            ushort[] pixels = Art.ReadStaticArt(19781);
+
         }
     }
 }

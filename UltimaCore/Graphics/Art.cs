@@ -5,28 +5,28 @@ using System.Text;
 
 namespace UltimaCore.Graphics
 {
-    public class Art
+    public static class Art
     {
-        UOFile _file;
+        private static UOFile _file;
 
-        public Art(string path)
+        public static void Load()
         {
-            string filepath = Path.Combine(path, "artLegacyMUL.uop");
+            string filepath = Path.Combine(FileManager.UoFolderPath, "artLegacyMUL.uop");
 
             if (File.Exists(filepath))
                 _file = new UOFileUop(filepath, ".tga", 0x10000);
             else
             {
-                filepath = Path.Combine(path, "art.mul");
-                string idxpath = Path.Combine(path, "artidx.mul");
+                filepath = Path.Combine(FileManager.UoFolderPath, "art.mul");
+                string idxpath = Path.Combine(FileManager.UoFolderPath, "artidx.mul");
                 if (File.Exists(filepath) && File.Exists(idxpath))
                     _file = new UOFileMul(filepath, idxpath);
             }
         }
 
-        public unsafe byte[] ReadStaticArt(ushort graphic)
+        public unsafe static ushort[] ReadStaticArt(ushort graphic)
         {
-            UOFileIndex index = _file.Entries[graphic];
+            UOFileIndex3D index = _file.Entries3D[graphic];
             _file.Seek(index.Offset);
             _file.Skip(4);
 
@@ -72,14 +72,12 @@ namespace UltimaCore.Graphics
                 }
             }
 
-            byte[] pi = new byte[pixels.Length * 2];
-            Buffer.BlockCopy(pixels, 0, pi, 0, pi.Length);
-            return pi;
+            return pixels;
         }
 
-        public unsafe byte[] ReadLandArt(ushort graphic)
+        public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
-            UOFileIndex index = _file.Entries[graphic];
+            UOFileIndex3D index = _file.Entries3D[graphic];
             _file.Seek(index.Offset);
 
             int i = 0;
@@ -124,9 +122,7 @@ namespace UltimaCore.Graphics
                 }
             }
 
-            byte[] pi = new byte[pixels.Length * 2];
-            Buffer.BlockCopy(pixels, 0, pi, 0, pi.Length);
-            return pi;
+            return pixels;
         }
     }
 }

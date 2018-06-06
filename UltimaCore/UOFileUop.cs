@@ -32,7 +32,7 @@ namespace UltimaCore
 
             int count = ReadInt();
 
-            Entries = new UOFileIndex[_count];
+            Entries3D = new UOFileIndex3D[_count];
             Dictionary<ulong, int> hashes = new Dictionary<ulong, int>();
 
             string pattern = System.IO.Path.GetFileNameWithoutExtension(FileName).ToLowerInvariant();
@@ -68,9 +68,9 @@ namespace UltimaCore
 
                     if (hashes.TryGetValue(hash, out int idx))
                     {
-                        if (idx < 0 || idx > Entries.Length)
+                        if (idx < 0 || idx > Entries3D.Length)
                             throw new IndexOutOfRangeException("hashes dictionary and files collection have different count of entries!");
-                        Entries[idx] = new UOFileIndex(offset + headerLength, length);
+                        Entries3D[idx] = new UOFileIndex3D(offset + headerLength, length);
 
                         // extra?
                     }

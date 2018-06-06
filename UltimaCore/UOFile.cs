@@ -9,7 +9,6 @@ namespace UltimaCore
 {
     public abstract class UOFile
     {
-        private MemoryMappedViewStream _stream;
         private BinaryReader _reader;
 
         public UOFile(string filepath)
@@ -20,23 +19,22 @@ namespace UltimaCore
 
         public string FileName { get; }
         public string Path { get; }
-        public long Length => _stream.Length;
-        public UOFileIndex[] Entries { get; set; }
+        public long Length => _reader.BaseStream.Length;
+        public UOFileIndex3D[] Entries3D { get; set; }
+        public UOFileIndex5D[] Entries5D { get; set; }
 
         protected virtual void Load()
         {
             FileInfo fileInfo = new FileInfo(FileName);
             if (!fileInfo.Exists)
-                throw new UOFileException($"{FileName} not exists.");
-
+                throw new UOFileException(FileName + " not exists.");            
             long size = fileInfo.Length;
             if (size > 0)
             {
                 var file = MemoryMappedFile.CreateFromFile(fileInfo.FullName, FileMode.Open);
                 if (file == null)
-                    throw new UOFileException("Something goes wrong with file mapping creation '" +  FileName + "'");
-                _stream = file.CreateViewStream(0, size, MemoryMappedFileAccess.Read);
-                _reader = new BinaryReader(_stream);
+                    throw new UOFileException("Something goes wrong with file mapping creation '" + FileName + "'");
+                _reader = new BinaryReader(file.CreateViewStream(0, size, MemoryMappedFileAccess.Read));
             }
             else
                 throw new UOFileException($"{FileName} size must has > 0");
@@ -57,9 +55,9 @@ namespace UltimaCore
             return buffer;
         }
 
-        internal void Skip(int count) => _stream.Seek(count, SeekOrigin.Current);
-        internal long Seek(int count) => _stream.Seek(count, SeekOrigin.Begin);
-        internal long Seek(long count) => _stream.Seek(count, SeekOrigin.Begin);
+        internal void Skip(int count) => _reader.BaseStream.Seek(count, SeekOrigin.Current);
+        internal long Seek(int count) => _reader.BaseStream.Seek(count, SeekOrigin.Begin);
+        internal long Seek(long count) => _reader.BaseStream.Seek(count, SeekOrigin.Begin);
 
     }
 
