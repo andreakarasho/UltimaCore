@@ -37,12 +37,7 @@ namespace UltimaCore.Graphics
 
                 }
             }
-
-           
-
         }
-
-
     }
 
     public class AnimationFrame
@@ -116,6 +111,8 @@ namespace UltimaCore.Graphics
             Load();
         }
 
+        public new UOFileIndexUopAnimation[] Entries { get; private set; }
+
         protected override void Load()
         {
             base.Load();
@@ -131,7 +128,7 @@ namespace UltimaCore.Graphics
             Seek(nextblock);
 
             Dictionary<ulong, UOFileIndexUopAnimation> hashes = new Dictionary<ulong, UOFileIndexUopAnimation>();
-            List<UOFileIndex3D> entries = new List<UOFileIndex3D>();
+            List<UOFileIndexUopAnimation> entries = new List<UOFileIndexUopAnimation>();
             do
             {
                 int fileCount = ReadInt();
@@ -169,12 +166,13 @@ namespace UltimaCore.Graphics
 
                     if (hashes.TryGetValue(hash, out var data))
                     {
-                        //entries.Add(new UOFileIndex3D(data.Offset, data.DecompressedLength))
+                        data.AnimID = animID;
+                        entries.Add(data);
                     }
                 }
             }
 
-            Entries3D = entries.ToArray();
+            this.Entries = entries.ToArray();
         }
     }
 
@@ -183,5 +181,6 @@ namespace UltimaCore.Graphics
         public int Offset { get; set; }
         public int CompressedLength { get; set; }
         public int DecompressedLength { get; set; }
+        public int AnimID { get; set; }
     }
 }

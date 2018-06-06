@@ -20,7 +20,7 @@ namespace UltimaCore
         public string FileName { get; }
         public string Path { get; }
         public long Length => _reader.BaseStream.Length;
-        public UOFileIndex3D[] Entries3D { get; set; }
+        public UOFileIndex3D[] Entries { get; protected set; }
 
         protected virtual void Load()
         {

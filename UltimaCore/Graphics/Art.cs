@@ -26,7 +26,7 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadStaticArt(ushort graphic)
         {
-            UOFileIndex3D index = _file.Entries3D[graphic];
+            UOFileIndex3D index = _file.Entries[graphic];
             _file.Seek(index.Offset);
             _file.Skip(4);
 
@@ -77,7 +77,7 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
-            UOFileIndex3D index = _file.Entries3D[graphic];
+            UOFileIndex3D index = _file.Entries[graphic];
             _file.Seek(index.Offset);
 
             int i = 0;

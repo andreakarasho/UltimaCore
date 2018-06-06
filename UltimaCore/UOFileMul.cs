@@ -31,10 +31,10 @@ namespace UltimaCore
 
                 int count = (int)_idxFile.Length / 12;
 
-                Entries3D = new UOFileIndex3D[count];
+                Entries = new UOFileIndex3D[count];
 
                 for (int i = 0; i < count; i++)
-                    Entries3D[i] = new UOFileIndex3D(_idxFile.ReadInt(), _idxFile.ReadInt(), _idxFile.ReadInt());
+                    Entries[i] = new UOFileIndex3D(_idxFile.ReadInt(), _idxFile.ReadInt(), _idxFile.ReadInt());
 
                 var patches = Verdata.Patches;
 
@@ -43,9 +43,9 @@ namespace UltimaCore
                     var patch = patches[i];
 
                     if (patch.File == _patch && patch.Index >= 0 &&
-                        patch.Index < Entries3D.Length)
+                        patch.Index < Entries.Length)
                     {
-                        UOFileIndex3D entry = Entries3D[patch.Index];
+                        UOFileIndex3D entry = Entries[patch.Index];
                         entry.Offset = patch.Offset;
                         entry.Length = patch.Length | (1 << 31);
                         entry.Extra = patch.Extra;
