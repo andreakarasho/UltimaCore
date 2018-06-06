@@ -20,6 +20,9 @@ namespace Sample
             Art.Load();
             ushort[] pixels = Art.ReadStaticArt(19781);
 
+            Animations.Load();
+
+
         }
     }
 }

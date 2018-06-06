@@ -81,7 +81,7 @@ namespace UltimaCore
             } while (Seek(nextBlock) != 0);
         }
 
-        private static ulong CreateHash(string s)
+        internal static ulong CreateHash(string s)
         {
             uint eax, ecx, edx, ebx, esi, edi;
 
