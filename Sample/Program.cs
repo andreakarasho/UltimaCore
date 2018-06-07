@@ -24,6 +24,9 @@ namespace Sample
 
             Animations.Load();
 
+            BodyConverter.Load();
+            BodyConverter.HasBody(46);
+
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
         }
