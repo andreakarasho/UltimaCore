@@ -23,6 +23,7 @@ namespace Sample
             Art.Load();
             BodyDef.Load();
             GraphicHelper.Load();
+            Cliloc.Load();
             Animations.Load();
 
             ushort[] pixels = Art.ReadStaticArt(19781);
