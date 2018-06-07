@@ -21,12 +21,14 @@ namespace Sample
             Stopwatch w = Stopwatch.StartNew();
 
             Art.Load();
-            ushort[] pixels = Art.ReadStaticArt(19781);
-
+            BodyDef.Load();
+            GraphicHelper.Load();
             Animations.Load();
 
-            BodyConverter.Load();
-            BodyConverter.HasBody(46);
+            ushort[] pixels = Art.ReadStaticArt(19781);
+
+
+            GraphicHelper.HasBody(46);
 
             int hue = 38;
             var animation = Animations.GetAnimation(400, 0, 0, ref hue);
@@ -35,6 +37,8 @@ namespace Sample
 
             Fonts.Load();
             var a = Fonts.GetASCII(0).GetChar('A');
+
+
 
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();

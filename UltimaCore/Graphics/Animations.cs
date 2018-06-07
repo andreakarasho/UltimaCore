@@ -28,8 +28,10 @@ namespace UltimaCore.Graphics
 
         public static AnimationFrame[] GetAnimation(int body, int action, int direction, ref int hue)
         {
-            int type = BodyConverter.SetBody(ref body);
+            BodyDef.Translate(ref body, ref hue);
 
+            int type = GraphicHelper.SetBody(ref body);
+            
             GetFileToRead(body, action, direction, type, out UOFile file, out int index);
 
 
@@ -273,7 +275,7 @@ namespace UltimaCore.Graphics
         public int AnimID { get; set; }
     }
 
-    public static class BodyConverter
+    public static class GraphicHelper
     {
         private static readonly int[][] Table = new int[4][];
 
