@@ -77,8 +77,8 @@ namespace UltimaCore
                     else
                        throw new ArgumentException(string.Format("File with hash 0x{0:X8} was not found in hashes dictionary! EA Mythic changed UOP format!", hash));
                 }
-
-            } while (Seek(nextBlock) != 0);
+                Seek(nextBlock);
+            } while (nextBlock != 0);
         }
 
         internal static ulong CreateHash(string s)

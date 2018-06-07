@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using UltimaCore;
@@ -16,12 +17,15 @@ namespace Sample
         {
             FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
 
+            Stopwatch w = Stopwatch.StartNew();
+
             Art.Load();
             ushort[] pixels = Art.ReadStaticArt(19781);
 
             Animations.Load();
 
-
+            Console.WriteLine(w.ElapsedMilliseconds + " ms");
+            Console.ReadLine();
         }
     }
 }

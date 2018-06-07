@@ -155,7 +155,8 @@ namespace UltimaCore.Graphics
 
                     hashes.Add(hash, data);
                 }
-            } while (Seek(nextblock) != 0);
+                Seek(nextblock);
+            } while (nextblock != 0);
 
             for (int animID = 0; animID < 2048; animID++)
             {

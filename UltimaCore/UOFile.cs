@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace UltimaCore
 {
-    public abstract class UOFile
+    public unsafe abstract class UOFile
     {
-        private BinaryReader _reader;
+        //private BinaryReader _reader;
 
         public UOFile(string filepath)
         {
@@ -19,8 +19,12 @@ namespace UltimaCore
 
         public string FileName { get; }
         public string Path { get; }
-        public long Length => _reader.BaseStream.Length;
+        public long Length => _length;  //_reader.BaseStream.Length;
         public UOFileIndex3D[] Entries { get; protected set; }
+
+        private byte* _ptr;
+        private int _position;
+        private long _length;
 
         protected virtual void Load()
         {
@@ -33,13 +37,17 @@ namespace UltimaCore
                 var file = MemoryMappedFile.CreateFromFile(fileInfo.FullName, FileMode.Open);
                 if (file == null)
                     throw new UOFileException("Something goes wrong with file mapping creation '" + FileName + "'");
-                _reader = new BinaryReader(file.CreateViewStream(0, size, MemoryMappedFileAccess.Read));
+                var stream = file.CreateViewStream(0, size, MemoryMappedFileAccess.Read);
+                //_reader = new BinaryReader(stream);
+                _position = 0;
+                _length = stream.Length;
+                stream.SafeMemoryMappedViewHandle.AcquirePointer(ref _ptr);
             }
             else
                 throw new UOFileException($"{FileName} size must has > 0");
         }
 
-        internal byte ReadByte() => _reader.ReadByte();
+        /*internal byte ReadByte() => _reader.ReadByte();
         internal sbyte ReadSByte() => _reader.ReadSByte();
         internal short ReadShort() => _reader.ReadInt16();
         internal ushort ReadUShort() => _reader.ReadUInt16();
@@ -56,8 +64,27 @@ namespace UltimaCore
 
         internal void Skip(int count) => _reader.BaseStream.Seek(count, SeekOrigin.Current);
         internal long Seek(int count) => _reader.BaseStream.Seek(count, SeekOrigin.Begin);
-        internal long Seek(long count) => _reader.BaseStream.Seek(count, SeekOrigin.Begin);
+        internal long Seek(long count) => _reader.BaseStream.Seek(count, SeekOrigin.Begin);*/
 
+        internal byte ReadByte() => _ptr[_position++];
+        internal sbyte ReadSByte() => (sbyte)ReadByte();
+        internal short ReadShort() => (short)(ReadByte() | (ReadByte() << 8));
+        internal ushort ReadUShort() => (ushort)ReadShort();
+        internal int ReadInt() => (ReadByte() | (ReadByte() << 8) | (ReadByte() << 16) | (ReadByte() << 24));
+        internal uint ReadUInt() => (uint)ReadInt();
+        internal long ReadLong() => (ReadByte() | ((long)ReadByte() << 8) | ((long)ReadByte() << 16) | ((long)ReadByte() << 24) | ((long)ReadByte() << 32) | ((long)ReadByte() << 40) | ((long)ReadByte() << 48) | ((long)ReadByte() << 56));
+        internal ulong ReadULong() => (ulong)ReadLong();
+        internal byte[] ReadArray(int count)
+        {
+            byte[] buffer = new byte[count];
+
+            for (int i = 0; i < count; i++)
+                buffer[i] = ReadByte();
+            return buffer;
+        }
+        internal void Skip(int count) => _position += count;
+        internal void Seek(int count) => _position = count;
+        internal void Seek(long count) => _position = (int)count;
     }
 
     public class UOFileException : Exception
