@@ -23,9 +23,9 @@ namespace UltimaCore
         public UOFileIndex3D[] Entries { get; protected set; }
         public int Position { get => _position; set => _position = value; }
 
-        private byte* _ptr;
-        private int _position;
-        private long _length;
+        protected byte* _ptr;
+        protected int _position;
+        protected long _length;
 
         protected virtual void Load()
         {

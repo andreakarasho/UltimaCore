@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.IO.Compression;
 
 namespace UltimaCore.Graphics
 {
@@ -10,6 +12,7 @@ namespace UltimaCore.Graphics
     {
         private static List<UOFile> _files = new List<UOFile>();
         
+
         public static void Load()
         {
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim.mul"), Path.Combine(FileManager.UoFolderPath, "anim.idx"), 0x40000, 6));
@@ -34,19 +37,18 @@ namespace UltimaCore.Graphics
             
             GetFileToRead(body, action, direction, type, out UOFile file, out int index);
 
-
+            AnimationFrame[] frames;
             if (file is UOFileUopAnimation uopfile)
             {
                 uopfile.Seek(uopfile.Entries[index].Offset);
+                frames = LoadAnimationUop(uopfile, index, direction);
             }
             else
             {
                 file.Seek(file.Entries[index].Offset);
+                frames = LoadAnimation(file);
             }
             
-
-            AnimationFrame[] frames = LoadAnimation(file);
-
             return frames;
         }
 
@@ -72,29 +74,131 @@ namespace UltimaCore.Graphics
             return frames;
         }
 
+        private struct UopDataFrame
+        {
+            public short ID;
+            public int Offset;
+            public int Start;
+
+            public static UopDataFrame Null = new UopDataFrame()
+            {
+                ID = 0,
+                Offset = 0,
+                Start = -1,
+            };
+        }
+
+        private static unsafe AnimationFrame[] LoadAnimationUop(UOFileUopAnimation file, int index, int direction)
+        {
+            int start = 0;
+
+            file.Uncompress(index);
+
+            file.Skip(8);
+            int dcsize = file.ReadInt();
+            int animid = file.ReadInt();
+            file.Skip(16);
+            int framecount = file.ReadInt();
+            int datastart = start + file.ReadInt();
+            file.Seek(datastart);
+            List<UopDataFrame> datas = new List<UopDataFrame>();
+            for (int i = 0; i < framecount; i++)
+            {
+                UopDataFrame data = new UopDataFrame()
+                {
+                    Start = file.Position,
+                };
+                file.Skip(2);
+                data.ID = file.ReadShort();
+                file.Skip(8);
+                data.Offset = file.ReadInt();
+
+                int vsize = datas.Count;
+                if (vsize + 1 != data.ID)
+                {
+                    while (vsize + 1 != data.ID)
+                    {
+                        datas.Add(UopDataFrame.Null);
+                        vsize++;
+                    }
+                }
+                datas.Add(data);
+            }
+
+            int animframecount = datas.Count / 5;
+
+            AnimationFrame[] frames = new AnimationFrame[animframecount];
+
+            int dir = direction & 7;
+            if (dir > 4)
+                dir = dir - (dir - 4) * 2;
+
+            int framestartidx = animframecount * dir;
+
+            for (int i = 0; i < animframecount; i++)
+            {
+                UopDataFrame data = datas[i + framestartidx];
+                if (data.Start == -1)
+                {
+                    frames[i] = AnimationFrame.Null;
+                    continue;
+                }
+
+                file.Seek(data.Start + data.Offset);
+
+                ushort[] palette = new ushort[0x100];
+                for (int a = 0; a < palette.Length; a++)
+                    palette[a] = (ushort)(file.ReadUShort() ^ 0x8000);
+
+                frames[i] = new AnimationFrame(palette, file);
+            }
+
+            return frames;
+        }
+
         private static void GetFileToRead(int body, int action, int direction, int type, out UOFile file, out int index)
         {
+            bool isuop = false;
+
             switch (type)
             {
                 default:
                 case 1:
-                    file = _files[0];
-                    if (body < 200)
-                        index = body * 110;
-                    else if (body < 400)
-                        index = 22000 + ((body - 200) * 65);
+
+                    if ((isuop = _files[0].Entries.Length >= body))
+                    {
+                        file = _files[5];
+                        var f = ((UOFileUopAnimation)file).Entries;
+                        index = 0;
+                        for (int i = 0; i < f.Length; i++)
+                        {
+                            if (f[i].AnimID == body )
+                            {
+                                index = i;
+                                break;
+                            }
+                        }
+                    }
                     else
-                        index = 35000 + ((body - 400) * 175);
+                    {
+                        file = _files[0];
+                        if (body < 200)
+                            index = body * 110;
+                        else if (body < 400)
+                            index = 22000 + ((body - 200) * 65);
+                        else
+                            index = 35000 + ((body - 400) * 175);
+                    }
                     break;
                 case 2:
-                    file = _files[1];
+                    file = _files[1].Entries.Length < body ? _files[1] : _files[6];
                     if (body < 200)
                         index = body * 110;
                     else
                         index = 22000 + ((body - 200) * 65);
                     break;
                 case 3:
-                    file = _files[2];
+                    file = _files[2].Entries.Length < body ? _files[2] : _files[7];
                     if (body < 300)
                         index = body * 65;
                     else if (body < 400)
@@ -103,7 +207,7 @@ namespace UltimaCore.Graphics
                         index = 35000 + ((body - 400) * 175);
                     break;
                 case 4:
-                    file = _files[3];
+                    file = _files[3].Entries.Length < body ? _files[3] : _files[8];
                     if (body < 200)
                         index = body * 110;
                     else if (body < 400)
@@ -112,7 +216,8 @@ namespace UltimaCore.Graphics
                         index = 35000 + ((body - 400) * 175);
                     break;
                 case 5:
-                    file = _files[4];
+                    // NB: maybe wrong .uop
+                    file = _files[4].Entries.Length < body ? _files[4] : _files[8];
                     if ((body < 200) && (body != 34)) // looks strange, though it works.
                         index = body * 110;
                     else if (body < 400)
@@ -202,6 +307,49 @@ namespace UltimaCore.Graphics
         }
 
         public new UOFileIndexUopAnimation[] Entries { get; private set; }
+
+        private struct UopDataFrame
+        {
+            public short ID;
+            public int Offset;
+            public int Start;
+
+            public static UopDataFrame Null = new UopDataFrame()
+            {
+                ID = 0,
+                Offset = 0,
+                Start = -1,
+            };
+        }
+
+        public unsafe void Uncompress(int index)
+        {
+            var e = Entries[index];
+            Seek(e.Offset);
+            byte[] buffer = ReadArray(e.CompressedLength);
+            int clen = e.CompressedLength;
+            int dlen = e.DecompressedLength;
+
+            byte[] decbuffer = new byte[dlen];
+            using (MemoryStream ms = new MemoryStream(buffer))
+            {
+                ms.Seek(2, SeekOrigin.Begin);
+                using (DeflateStream stream = new DeflateStream(ms, CompressionMode.Decompress))
+                {
+                    for (int i = 0; i < dlen; i++)
+                        decbuffer[i] = (byte)stream.ReadByte();
+                }
+            }
+
+
+            fixed (byte* ptr = decbuffer)
+            {
+                _ptr = ptr;
+                _position = 0;
+                _length = decbuffer.Length;
+            }
+        }
+
 
         protected override void Load()
         {

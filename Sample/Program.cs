@@ -27,12 +27,13 @@ namespace Sample
             GraphicHelper.HasBody(46);
 
             int hue = 38;
-            var animation = Animations.GetAnimation(400, 0, 0, ref hue);
+            // 1254 = wild tiger
+            var animation = Animations.GetAnimation(1254, 0, 0, ref hue);
 
             var a = Fonts.GetASCII(0).GetChar('A');
 
             ushort[] pixelsgump = Gumps.GetGump(1416);
-
+            
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
         }

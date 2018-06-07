@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO.Compression;
 
 namespace UltimaCore
 {
@@ -96,6 +97,7 @@ namespace UltimaCore
             } while (nextBlock != 0);
         }
 
+       
         internal static ulong CreateHash(string s)
         {
             uint eax, ecx, edx, ebx, esi, edi;
