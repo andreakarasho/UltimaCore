@@ -10,10 +10,11 @@ namespace UltimaCore
 
         private readonly string _extension;
         private readonly int _count;
+        private readonly bool _hasExtra;
 
-        public UOFileUop(string path, string extension, int count) : base(path)
+        public UOFileUop(string path, string extension, int count, bool hasextra = false) : base(path)
         {
-             _extension = extension; _count = count;
+             _extension = extension; _count = count; _hasExtra = hasextra;
 
             Load();
         }
@@ -73,6 +74,20 @@ namespace UltimaCore
                         Entries[idx] = new UOFileIndex3D(offset + headerLength, length);
 
                         // extra?
+                        if (_hasExtra)
+                        {
+                            long curpos = Position;
+                            Seek(offset + headerLength);
+
+                            byte[] extra = ReadArray(8);
+                            ushort extra1 = (ushort)((extra[3] << 24) | (extra[2] << 16) | (extra[1] << 8) | extra[0]);
+                            ushort extra2 = (ushort)((extra[7] << 24) | (extra[6] << 16) | (extra[5] << 8) | extra[4]);
+
+                            Entries[idx].Offset += 8;
+                            Entries[idx].Extra = extra1 << 16 | extra2;
+
+                            Seek(curpos);
+                        }
                     }
                     else
                        throw new ArgumentException(string.Format("File with hash 0x{0:X8} was not found in hashes dictionary! EA Mythic changed UOP format!", hash));

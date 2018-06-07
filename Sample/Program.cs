@@ -16,15 +16,10 @@ namespace Sample
 
         static void Main(string[] args)
         {
-            FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
-
             Stopwatch w = Stopwatch.StartNew();
 
-            Art.Load();
-            BodyDef.Load();
-            GraphicHelper.Load();
-            Cliloc.Load();
-            Animations.Load();
+            FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
+            FileManager.LoadFiles();
 
             ushort[] pixels = Art.ReadStaticArt(19781);
 
@@ -34,12 +29,9 @@ namespace Sample
             int hue = 38;
             var animation = Animations.GetAnimation(400, 0, 0, ref hue);
 
-            //UOFileUop animSeq = new UOFileUop(Path.Combine(FileManager.UoFolderPath, "AnimationSequence.uop"), ".bin", 2048);
-
-            Fonts.Load();
             var a = Fonts.GetASCII(0).GetChar('A');
 
-
+            ushort[] pixelsgump = Gumps.GetGump(1416);
 
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
