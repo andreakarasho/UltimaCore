@@ -341,7 +341,6 @@ namespace UltimaCore.Graphics
                 }
             }
 
-
             fixed (byte* ptr = decbuffer)
             {
                 _ptr = ptr;
