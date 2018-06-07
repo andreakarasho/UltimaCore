@@ -101,6 +101,7 @@ namespace UltimaCore.Graphics
             int framecount = file.ReadInt();
             int datastart = start + file.ReadInt();
             file.Seek(datastart);
+
             List<UopDataFrame> datas = new List<UopDataFrame>();
             for (int i = 0; i < framecount; i++)
             {
@@ -307,20 +308,6 @@ namespace UltimaCore.Graphics
         }
 
         public new UOFileIndexUopAnimation[] Entries { get; private set; }
-
-        private struct UopDataFrame
-        {
-            public short ID;
-            public int Offset;
-            public int Start;
-
-            public static UopDataFrame Null = new UopDataFrame()
-            {
-                ID = 0,
-                Offset = 0,
-                Start = -1,
-            };
-        }
 
         public unsafe void Uncompress(int index)
         {
