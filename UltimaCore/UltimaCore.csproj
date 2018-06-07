@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Folder Include="Audio\" />
-    <Folder Include="Fonts\" />
   </ItemGroup>
 
 </Project>

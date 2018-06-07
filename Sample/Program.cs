@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using UltimaCore;
 using UltimaCore.Graphics;
+using UltimaCore.Fonts;
 
 namespace Sample
 {
@@ -29,6 +30,11 @@ namespace Sample
 
             int hue = 38;
             var animation = Animations.GetAnimation(400, 0, 0, ref hue);
+
+            //UOFileUop animSeq = new UOFileUop(Path.Combine(FileManager.UoFolderPath, "AnimationSequence.uop"), ".bin", 2048);
+
+            Fonts.Load();
+            var a = Fonts.GetASCII(0).GetChar('A');
 
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();

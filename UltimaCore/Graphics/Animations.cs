@@ -196,7 +196,6 @@ namespace UltimaCore.Graphics
 
         public UOFileUopAnimation(string path) : base(path)
         {
-
             Load();
         }
 
