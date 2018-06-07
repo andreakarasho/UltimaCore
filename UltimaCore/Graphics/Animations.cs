@@ -14,30 +14,133 @@ namespace UltimaCore.Graphics
         {
             string filepath;
 
+            _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim.mul"), Path.Combine(FileManager.UoFolderPath, "anim.idx"), 0x40000, 6));
+            _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim2.mul"), Path.Combine(FileManager.UoFolderPath, "anim2.idx"), 0x10000));
+            _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim3.mul"), Path.Combine(FileManager.UoFolderPath, "anim3.idx"), 0x20000));
+            _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim4.mul"), Path.Combine(FileManager.UoFolderPath, "anim4.idx"), 0x20000));
+            _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim5.mul"), Path.Combine(FileManager.UoFolderPath, "anim5.idx"), 0x20000));
+
             for (int i = 0; i < 5; i++)
+            {
+                string name = string.Format("Anim{0}.mul", (i == 0 ? "" : i.ToString()));
+                string idx = string.Format("Anim{0}.idx", (i == 0 ? "" : i.ToString()));
+
+                filepath = Path.Combine(FileManager.UoFolderPath, name);
+                string fileidxpath = Path.Combine(FileManager.UoFolderPath, idx);
+
+                if (File.Exists(filepath) && File.Exists(fileidxpath))
+                    _files.Add(new UOFileMul(filepath, fileidxpath, i == 0 ? 6 : -1));
+            }
+
+            for (int i = 1; i < 5; i++)
             {
                 filepath = Path.Combine(FileManager.UoFolderPath, string.Format("AnimationFrame{0}.uop", i));
                 if (File.Exists(filepath))
                     _files.Add(new UOFileUopAnimation(filepath));
-                else
-                {
-                    string name = string.Format("Anim{0}.mul", (i == 0 ? "" : i.ToString()));
-                    string idx = string.Format("Anim{0}.idx", (i == 0 ? "" : i.ToString()));
-
-                    filepath = Path.Combine(FileManager.UoFolderPath, name);
-                    string fileidxpath = Path.Combine(FileManager.UoFolderPath, idx);
-
-                    if (File.Exists(filepath) && File.Exists(fileidxpath))
-                    {
-                        try
-                        {
-                            _files.Add(new UOFileMul(filepath, fileidxpath, i == 0 ? 6 : -1));
-                        }
-                        catch { }
-                    }
-
-                }
             }
+        }
+
+        public static AnimationFrame[] GetAnimation(int body, int action, int direction, ref int hue)
+        {
+
+            int type = BodyConverter.SetBody(ref body);
+
+            GetFileToRead(body, action, direction, type, out UOFile file, out int index);
+
+
+            if (file is UOFileUopAnimation uopfile)
+            {
+                uopfile.Seek(uopfile.Entries[index].Offset);
+            }
+            else
+            {
+                file.Seek(file.Entries[index].Offset);
+            }
+            
+
+            AnimationFrame[] frames = LoadAnimation(file, body, action, direction);
+
+            return frames;
+        }
+
+        private static AnimationFrame[] LoadAnimation(UOFile file, int body, int action, int direction)
+        {
+            ushort[] palette = new ushort[0x100];
+            for (int i = 0; i < palette.Length; i++)
+                palette[i] = (ushort)(file.ReadUShort() ^ 0x8000);
+
+            int start = file.Position;
+            int frameCount = file.ReadInt();
+
+            int[] lookups = new int[frameCount];
+            for (int i = 0; i < lookups.Length; i++)
+                lookups[i] = start + file.ReadInt();
+
+            AnimationFrame[] frames = new AnimationFrame[frameCount];
+            for (int i = 0; i < frames.Length; i++)
+            {
+                file.Seek(lookups[i]);
+                frames[i] = new AnimationFrame(palette, file);
+            }
+            return frames;
+        }
+
+        private static void GetFileToRead(int body, int action, int direction, int type, out UOFile file, out int index)
+        {
+            switch (type)
+            {
+                default:
+                case 1:
+                    file = _files[0];
+                    if (body < 200)
+                        index = body * 110;
+                    else if (body < 400)
+                        index = 22000 + ((body - 200) * 65);
+                    else
+                        index = 35000 + ((body - 400) * 175);
+                    break;
+                case 2:
+                    file = _files[1];
+                    if (body < 200)
+                        index = body * 110;
+                    else
+                        index = 22000 + ((body - 200) * 65);
+                    break;
+                case 3:
+                    file = _files[2];
+                    if (body < 300)
+                        index = body * 65;
+                    else if (body < 400)
+                        index = 33000 + ((body - 300) * 110);
+                    else
+                        index = 35000 + ((body - 400) * 175);
+                    break;
+                case 4:
+                    file = _files[3];
+                    if (body < 200)
+                        index = body * 110;
+                    else if (body < 400)
+                        index = 22000 + ((body - 200) * 65);
+                    else
+                        index = 35000 + ((body - 400) * 175);
+                    break;
+                case 5:
+                    file = _files[4];
+                    if ((body < 200) && (body != 34)) // looks strange, though it works.
+                        index = body * 110;
+                    else if (body < 400)
+                        index = 22000 + ((body - 200) * 65);
+                    else
+                        index = 35000 + ((body - 400) * 175);
+                    break;
+            }
+
+            index += action * 5;
+
+            if (direction <= 4)
+                index += direction;
+            else
+                index += direction - (direction - 4) * 2;
         }
     }
 
@@ -57,17 +160,17 @@ namespace UltimaCore.Graphics
 
         public unsafe AnimationFrame(ushort[] palette, UOFile file)
         {
-            int x = file.ReadShort();
-            int y = file.ReadShort();
+            int centerX = file.ReadShort();
+            int centerY = file.ReadShort();
             int width = file.ReadUShort();
-            int heigth = file.ReadUShort();
+            int height = file.ReadUShort();
 
-            if (width == 0 || heigth == 0)
+            if (width == 0 || height == 0)
                 return;
 
             // sittings ?
 
-            ushort[] data = new ushort[width * heigth];
+            ushort[] data = new ushort[width * height];
 
             fixed (ushort* pdata = data)
             {
@@ -79,10 +182,10 @@ namespace UltimaCore.Graphics
                 {
                     header ^= DOUBLE_XOR;
 
-                    int xx = ((header >> 22) & 0x3FF) + x - 0x200;
-                    int yy = ((header >> 12) & 0x3FF) + y + header - 0x200;
+                    int x = ((header >> 22) & 0x3FF) + centerX - 0x200;
+                    int y = ((header >> 12) & 0x3FF) + centerY + height - 0x200;
 
-                    ushort* cur = dataRef + yy * width + xx;
+                    ushort* cur = dataRef + y * width + x;
                     ushort* end = cur + (header & 0xFFF);
                     int filecount = 0;
                     byte[] filedata = file.ReadArray(header & 0xFFF);
@@ -92,8 +195,8 @@ namespace UltimaCore.Graphics
 
             }
 
-            CenterX = x;
-            CenterY = y;
+            CenterX = centerX;
+            CenterY = centerY;
             Data = data;
         }
 
@@ -365,6 +468,40 @@ namespace UltimaCore.Graphics
                 }
             }
             return false;
+        }
+
+        public static int SetBody(ref int body)
+        {
+            if (body >= 0)
+            {
+                for (int i = 0; i < Table.Length; i++)
+                {
+                    if (body < Table[i].Length && Table[i][body] != -1)
+                    {
+                        body = Table[i][body];
+                        return i + 2;
+                    }
+                }
+            }
+            return 1;
+        }
+
+        public static int GetBody(int type, int index)
+        {
+            if (type > 5 || type == 1)
+                return index;
+
+            if (index >= 0)
+            {
+                var t = Table[type - 2];
+                for (int i = 0; i  < t.Length; i++)
+                {
+                    if (t[i] == index)
+                        return i;
+                }
+            }
+
+            return -1;
         }
     }
 }

@@ -8,11 +8,12 @@ namespace UltimaCore
     public class UOFileMul : UOFile
     {
         private readonly UOFileIdxMul _idxFile;
-        private readonly int _patch;
+        private readonly int _count, _patch;
 
-        public UOFileMul(string file, string idxfile, int patch = -1) : base(file)
+        public UOFileMul(string file, string idxfile, int count, int patch = -1) : base(file)
         {
             _idxFile = new UOFileIdxMul(idxfile);
+            _count = count;
             _patch = patch;
             Load();
         }
@@ -56,7 +57,7 @@ namespace UltimaCore
 
         private class UOFileIdxMul : UOFile
         {
-            public UOFileIdxMul(string idxpath) : base(idxpath) { }
+            public UOFileIdxMul(string idxpath) : base(idxpath) { Load(); }
         }
     }
 }

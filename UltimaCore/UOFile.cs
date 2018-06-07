@@ -21,6 +21,7 @@ namespace UltimaCore
         public string Path { get; }
         public long Length => _length;  //_reader.BaseStream.Length;
         public UOFileIndex3D[] Entries { get; protected set; }
+        public int Position => _position;
 
         private byte* _ptr;
         private int _position;

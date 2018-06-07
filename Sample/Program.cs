@@ -27,6 +27,9 @@ namespace Sample
             BodyConverter.Load();
             BodyConverter.HasBody(46);
 
+            int hue = 38;
+            var animation = Animations.GetAnimation(46, 0, 0, ref hue);
+
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
         }

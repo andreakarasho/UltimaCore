@@ -20,7 +20,7 @@ namespace UltimaCore.Graphics
                 filepath = Path.Combine(FileManager.UoFolderPath, "art.mul");
                 string idxpath = Path.Combine(FileManager.UoFolderPath, "artidx.mul");
                 if (File.Exists(filepath) && File.Exists(idxpath))
-                    _file = new UOFileMul(filepath, idxpath);
+                    _file = new UOFileMul(filepath, idxpath, 0x10000);
             }
         }
 
