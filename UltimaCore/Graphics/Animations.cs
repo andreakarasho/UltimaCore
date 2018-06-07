@@ -12,29 +12,15 @@ namespace UltimaCore.Graphics
         
         public static void Load()
         {
-            string filepath;
-
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim.mul"), Path.Combine(FileManager.UoFolderPath, "anim.idx"), 0x40000, 6));
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim2.mul"), Path.Combine(FileManager.UoFolderPath, "anim2.idx"), 0x10000));
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim3.mul"), Path.Combine(FileManager.UoFolderPath, "anim3.idx"), 0x20000));
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim4.mul"), Path.Combine(FileManager.UoFolderPath, "anim4.idx"), 0x20000));
             _files.Add(new UOFileMul(Path.Combine(FileManager.UoFolderPath, "anim5.mul"), Path.Combine(FileManager.UoFolderPath, "anim5.idx"), 0x20000));
 
-            for (int i = 0; i < 5; i++)
-            {
-                string name = string.Format("Anim{0}.mul", (i == 0 ? "" : i.ToString()));
-                string idx = string.Format("Anim{0}.idx", (i == 0 ? "" : i.ToString()));
-
-                filepath = Path.Combine(FileManager.UoFolderPath, name);
-                string fileidxpath = Path.Combine(FileManager.UoFolderPath, idx);
-
-                if (File.Exists(filepath) && File.Exists(fileidxpath))
-                    _files.Add(new UOFileMul(filepath, fileidxpath, i == 0 ? 6 : -1));
-            }
-
             for (int i = 1; i < 5; i++)
             {
-                filepath = Path.Combine(FileManager.UoFolderPath, string.Format("AnimationFrame{0}.uop", i));
+                string filepath = Path.Combine(FileManager.UoFolderPath, string.Format("AnimationFrame{0}.uop", i));
                 if (File.Exists(filepath))
                     _files.Add(new UOFileUopAnimation(filepath));
             }
@@ -42,7 +28,6 @@ namespace UltimaCore.Graphics
 
         public static AnimationFrame[] GetAnimation(int body, int action, int direction, ref int hue)
         {
-
             int type = BodyConverter.SetBody(ref body);
 
             GetFileToRead(body, action, direction, type, out UOFile file, out int index);
@@ -58,12 +43,12 @@ namespace UltimaCore.Graphics
             }
             
 
-            AnimationFrame[] frames = LoadAnimation(file, body, action, direction);
+            AnimationFrame[] frames = LoadAnimation(file);
 
             return frames;
         }
 
-        private static AnimationFrame[] LoadAnimation(UOFile file, int body, int action, int direction)
+        private static AnimationFrame[] LoadAnimation(UOFile file)
         {
             ushort[] palette = new ushort[0x100];
             for (int i = 0; i < palette.Length; i++)
