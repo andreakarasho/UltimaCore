@@ -8,6 +8,16 @@ using System.IO.Compression;
 
 namespace UltimaCore.Graphics
 {
+    public enum ANIMATION_GROUPS_TYPE
+    {
+        MONSTER = 0,
+        SEA_MONSTER,
+        ANIMAL,
+        HUMAN,
+        EQUIPMENT,
+        UNKNOWN
+    }
+
     public static class Animations
     {
         private static List<UOFile> _files = new List<UOFile>();
@@ -32,24 +42,20 @@ namespace UltimaCore.Graphics
         public static AnimationFrame[] GetAnimation(int body, int action, int direction, ref int hue)
         {
             BodyDef.Translate(ref body, ref hue);
-
-            int type = GraphicHelper.SetBody(ref body);
+            int type = GraphicHelper.Convert(ref body);
             
             GetFileToRead(body, action, direction, type, out UOFile file, out int index);
 
-            AnimationFrame[] frames;
+            bool flip = direction > 4;
+
             if (file is UOFileUopAnimation uopfile)
             {
                 uopfile.Seek(uopfile.Entries[index].Offset);
-                frames = LoadAnimationUop(uopfile, index, direction);
-            }
-            else
-            {
-                file.Seek(file.Entries[index].Offset);
-                frames = LoadAnimation(file);
+                return LoadAnimationUop(uopfile, body, direction);
             }
             
-            return frames;
+            file.Seek(file.Entries[index].Offset);
+            return LoadAnimation(file);
         }
 
         private static AnimationFrame[] LoadAnimation(UOFile file)
@@ -88,11 +94,11 @@ namespace UltimaCore.Graphics
             };
         }
 
-        private static unsafe AnimationFrame[] LoadAnimationUop(UOFileUopAnimation file, int index, int direction)
+        private static unsafe AnimationFrame[] LoadAnimationUop(UOFileUopAnimation file, int body, int direction)
         {
             int start = 0;
 
-            file.Uncompress(index);
+            file.Uncompress(body);
 
             file.Skip(8);
             int dcsize = file.ReadInt();
@@ -159,66 +165,77 @@ namespace UltimaCore.Graphics
 
         private static void GetFileToRead(int body, int action, int direction, int type, out UOFile file, out int index)
         {
-            bool isuop = false;
-
             switch (type)
             {
                 default:
                 case 1:
+                    if (body < 200)
+                        index = body * 110;
+                    else if (body < 400)
+                        index = 22000 + ((body - 200) * 65);
+                    else
+                        index = 35000 + ((body - 400) * 175);
 
-                    if ((isuop = _files[0].Entries.Length >= body))
+                    if (index >= _files[0].Entries.Length || (body < _files[5].Entries.Length && _files[5].Entries[body].IsUOP ))
                     {
                         file = _files[5];
-                        var f = ((UOFileUopAnimation)file).Entries;
-                        index = 0;
-                        for (int i = 0; i < f.Length; i++)
-                        {
-                            if (f[i].AnimID == body )
-                            {
-                                index = i;
-                                break;
-                            }
-                        }
+                        index = file.Entries[body].AnimID;
                     }
                     else
-                    {
-                        file = _files[0];
-                        if (body < 200)
-                            index = body * 110;
-                        else if (body < 400)
-                            index = 22000 + ((body - 200) * 65);
-                        else
-                            index = 35000 + ((body - 400) * 175);
-                    }
+                        file = _files[0];                    
                     break;
                 case 2:
-                    file = _files[1].Entries.Length < body ? _files[1] : _files[6];
                     if (body < 200)
                         index = body * 110;
                     else
                         index = 22000 + ((body - 200) * 65);
+
+                    if (index >= _files[1].Entries.Length || (body < _files[6].Entries.Length && _files[6].Entries[body].IsUOP))
+                    {
+                        file = _files[6];
+                        index = file.Entries[body].AnimID;
+                    }
+                    else
+                        file = _files[1];
+
                     break;
                 case 3:
-                    file = _files[2].Entries.Length < body ? _files[2] : _files[7];
                     if (body < 300)
                         index = body * 65;
                     else if (body < 400)
                         index = 33000 + ((body - 300) * 110);
                     else
                         index = 35000 + ((body - 400) * 175);
+
+                    if (index >= _files[2].Entries.Length || (index < _files[7].Entries.Length && _files[7].Entries[body].IsUOP))
+                    {
+                        file = _files[7];
+                        index = file.Entries[body].AnimID;
+                    }
+                    else
+                        file = _files[2];
+
                     break;
                 case 4:
-                    file = _files[3].Entries.Length < body ? _files[3] : _files[8];
                     if (body < 200)
                         index = body * 110;
                     else if (body < 400)
                         index = 22000 + ((body - 200) * 65);
                     else
                         index = 35000 + ((body - 400) * 175);
+
+                    if (index >= _files[3].Entries.Length || (body < _files[8].Entries.Length && _files[8].Entries[body].IsUOP))
+                    {
+                        file = _files[8];
+                        index = file.Entries[body].AnimID;
+                    }
+                    else
+                        file = _files[3];
+
                     break;
                 case 5:
                     // NB: maybe wrong .uop
-                    file = _files[4].Entries.Length < body ? _files[4] : _files[8];
+                    file = _files[4];
                     if ((body < 200) && (body != 34)) // looks strange, though it works.
                         index = body * 110;
                     else if (body < 400)
@@ -307,14 +324,12 @@ namespace UltimaCore.Graphics
             Load();
         }
 
-        public new UOFileIndexUopAnimation[] Entries { get; private set; }
-
         public unsafe void Uncompress(int index)
         {
             var e = Entries[index];
             Seek(e.Offset);
-            byte[] buffer = ReadArray(e.CompressedLength);
-            int clen = e.CompressedLength;
+            byte[] buffer = ReadArray(e.Length);
+            int clen = e.Length;
             int dlen = e.DecompressedLength;
 
             byte[] decbuffer = new byte[dlen];
@@ -351,8 +366,9 @@ namespace UltimaCore.Graphics
 
             Seek(nextblock);
 
-            Dictionary<ulong, UOFileIndexUopAnimation> hashes = new Dictionary<ulong, UOFileIndexUopAnimation>();
-            List<UOFileIndexUopAnimation> entries = new List<UOFileIndexUopAnimation>();
+            Dictionary<ulong, UOFileIndex3D> hashes = new Dictionary<ulong, UOFileIndex3D>();      
+            Entries = new UOFileIndex3D[4096];
+
             do
             {
                 int fileCount = ReadInt();
@@ -370,18 +386,15 @@ namespace UltimaCore.Graphics
                     if (offset == 0)
                         continue;
 
-                    UOFileIndexUopAnimation data = new UOFileIndexUopAnimation
-                    {
-                        Offset = (int)(offset + headerLength),
-                        CompressedLength = compressedLength,
-                        DecompressedLength = decompressedLength
-                    };
+                    UOFileIndex3D data = new UOFileIndex3D(offset + headerLength, compressedLength, 0, decompressedLength);
+
 
                     hashes.Add(hash, data);
                 }
                 Seek(nextblock);
             } while (nextblock != 0);
 
+            int idx = 0;
             for (int animID = 0; animID < 2048; animID++)
             {
                 for (int grpID = 0; grpID < 100; grpID++)
@@ -391,22 +404,13 @@ namespace UltimaCore.Graphics
 
                     if (hashes.TryGetValue(hash, out var data))
                     {
-                        data.AnimID = animID;
-                        entries.Add(data);
+                        if (data.AnimID <= 0)
+                            data.AnimID = idx++;
+                        Entries[animID + grpID] = data;
                     }
                 }
             }
-
-            this.Entries = entries.ToArray();
         }
-    }
-
-    public struct UOFileIndexUopAnimation
-    {
-        public int Offset { get; set; }
-        public int CompressedLength { get; set; }
-        public int DecompressedLength { get; set; }
-        public int AnimID { get; set; }
     }
 
     public static class GraphicHelper
@@ -486,21 +490,139 @@ namespace UltimaCore.Graphics
 
                     string[] values = Regex.Split(line, @"\t|\s+", RegexOptions.IgnoreCase);
 
-                    int original = Convert.ToInt32(values[0]);
-                    int anim2 = Convert.ToInt32(values[1]);
+                  /*  int index = Convert.ToInt32(values[0]);
+
+                    int[] anim = new int[4]
+                    {
+                        Convert.ToInt32(values[1]),
+                        -1 ,-1 ,-1
+                    };
+
+                    if (values.Length >= 3)
+                    {
+                        anim[1] = Convert.ToInt32(values[2]);
+                        if (values.Length >= 4)
+                        {
+                            anim[2] = Convert.ToInt32(values[3]);
+                            if (values.Length >= 5)
+                                anim[3] = Convert.ToInt32(values[4]);
+                        }
+                    }
+
+                    int startAnimID = -1;
+                    int animFile = 1;
+                    ushort realAnimID = 0;
+                    ANIMATION_GROUPS_TYPE group = ANIMATION_GROUPS_TYPE.UNKNOWN;
+
+                    if (anim[0] != -1)
+                    {
+                        animFile = 2;
+                        realAnimID = (ushort)anim[0];
+                        if (realAnimID == 68)
+                            realAnimID = 122;
+
+                        if (realAnimID >= 200)
+                        {
+                            startAnimID = ((realAnimID - 200) * 65) + 22000;
+                            group = ANIMATION_GROUPS_TYPE.ANIMAL;
+                        }
+                        else
+                        {
+                            startAnimID = realAnimID * 110;
+                            group = ANIMATION_GROUPS_TYPE.MONSTER;
+                        }
+                    }
+                    else if (anim[1] != -1)
+                    {
+                        animFile = 3;
+                        realAnimID = (ushort)anim[1];
+
+                        if (realAnimID >= 200)
+                        {
+                            if (realAnimID >= 400)
+                            {
+                                startAnimID = ((realAnimID - 400) * 175) + 35000;
+                                group = ANIMATION_GROUPS_TYPE.HUMAN;
+                            }
+                            else
+                            {
+                                startAnimID = (realAnimID * 65) + 9000;
+                                group = ANIMATION_GROUPS_TYPE.MONSTER;
+                            }
+                        }
+                    }
+                    else if (anim[2] != -1)
+                    {
+                        animFile = 4;
+                        realAnimID = (ushort)anim[2];
+
+                        if (realAnimID >= 200)
+                        {
+                            if (realAnimID >= 400)
+                            {
+                                startAnimID = ((realAnimID - 400) * 175) + 35000;
+                                group = ANIMATION_GROUPS_TYPE.HUMAN;
+                            }
+                            else
+                            {
+                                startAnimID = ((realAnimID - 200) * 65) + 22000;
+                                group = ANIMATION_GROUPS_TYPE.ANIMAL;
+                            }
+                        }
+                        else
+                        {
+                            startAnimID = realAnimID * 110;
+                            group = ANIMATION_GROUPS_TYPE.MONSTER;
+                        }
+                    }
+                    else if (anim[3] != -1)
+                    {
+                        animFile = 5;
+                        realAnimID = (ushort)anim[3];
+
+                        if (realAnimID == 34)
+                            startAnimID = ((realAnimID - 200) * 65) + 22000;
+                        else if (realAnimID >= 200)
+                        {
+                            if (realAnimID >= 400)
+                            {
+                                startAnimID = ((realAnimID - 400) * 175) + 35000;
+                                group = ANIMATION_GROUPS_TYPE.HUMAN;
+                            }
+                            else
+                            {
+                                startAnimID = ((realAnimID - 200) * 65) + 22000;
+                                group = ANIMATION_GROUPS_TYPE.ANIMAL;
+                            }
+                        }
+                        else
+                        {
+                            startAnimID = ((realAnimID - 200) * 65) + 22000;
+                            group = ANIMATION_GROUPS_TYPE.ANIMAL;
+                        }
+                    }
+
+                    if (animFile != 1 && startAnimID != -1)
+                    {
+                        startAnimID = startAnimID * 4 * 3;
+                    }
+                    */
+
+                    int original = System.Convert.ToInt32(values[0]);
+                    int anim2 = System.Convert.ToInt32(values[1]);
                     int anim3 = -1, anim4 = -1, anim5 = -1;
 
                     if (values.Length >= 3)
                     {
-                        anim3 = Convert.ToInt32(values[2]);
+                        anim3 = System.Convert.ToInt32(values[2]);
 
                         if (values.Length >= 4)
                         {
-                            anim4 = Convert.ToInt32(values[3]);
+                            anim4 = System.Convert.ToInt32(values[3]);
 
                             if (values.Length >= 5)
                             {
-                                anim5 = Convert.ToInt32(values[4]);
+                                anim5 = System.Convert.ToInt32(values[4]);
                             }
                         }
                     }
@@ -514,7 +636,8 @@ namespace UltimaCore.Graphics
                         if (original > max1)
                             max1 = original;
 
-                        list1.Add(original); list1.Add(anim2);
+                        list1.Add(original);
+                        list1.Add(anim2);
                     }
 
                     if (anim3 != -1)
@@ -540,7 +663,7 @@ namespace UltimaCore.Graphics
                         list4.Add(original);
                         list4.Add(anim5);
                     }
-
+                    
                 }
             }
 
@@ -590,7 +713,7 @@ namespace UltimaCore.Graphics
             return false;
         }
 
-        public static int SetBody(ref int body)
+        public static int Convert(ref int body)
         {
             if (body >= 0)
             {
@@ -623,5 +746,31 @@ namespace UltimaCore.Graphics
 
             return -1;
         }
+    }
+
+    public class IndexAnimation
+    {
+        public IndexAnimation()
+        {
+
+        }
+
+
+        public ushort Graphic { get; set; }
+        public ushort Color { get; set; }
+        public ANIMATION_GROUPS_TYPE Type { get; set; }
+        public uint Flags { get; set; }
+        public byte MountedHeightOffset { get; set; }
+        public bool IsUOP { get; set; }
+    }
+
+    public class AnimationGroup
+    {
+        public AnimationGroup()
+        {
+
+        }
+
+        
     }
 }

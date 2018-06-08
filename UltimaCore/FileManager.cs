@@ -19,6 +19,7 @@ namespace UltimaCore
             Animations.Load();
             Gumps.Load();
             Fonts.Fonts.Load();
+            Hues.Load();
         }
     }
 }

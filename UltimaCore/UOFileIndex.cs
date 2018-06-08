@@ -6,14 +6,20 @@ namespace UltimaCore
 {
     public struct UOFileIndex3D
     {
-        public UOFileIndex3D(long offset, int length, int extra = 0)
+        public UOFileIndex3D(long offset, int length, int extra = 0, int decLength = 0, int animID = 0)
         {
             Offset = offset; Length = length; Extra = extra;
+            DecompressedLength = decLength; AnimID = animID;
         }
 
         public long Offset;
         public int Length;
         public int Extra;
+
+        public int DecompressedLength;
+        public int AnimID;
+
+        public bool IsUOP => DecompressedLength > 0;
     }
 
     public struct UOFileIndex5D

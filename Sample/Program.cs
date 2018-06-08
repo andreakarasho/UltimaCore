@@ -28,7 +28,7 @@ namespace Sample
 
             int hue = 38;
             // 1254 = wild tiger
-            var animation = Animations.GetAnimation(1254, 0, 0, ref hue);
+            //var animation = Animations.GetAnimation(1421, 0, 0, ref hue);
             /*var animation1 = Animations.GetAnimation(1253, 0, 0, ref hue);
             var animation2 = Animations.GetAnimation(1250, 0, 0, ref hue);*/
 

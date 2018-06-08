@@ -9,6 +9,12 @@ namespace UltimaCore.Graphics
     {
         private static Dictionary<int, BodyTableEntry> _entries;
 
+        public static BodyTableEntry Get(int i)
+        {
+            _entries.TryGetValue(i, out var r);
+            return r;
+        }
+
         public static void Load()
         {
             _entries = new Dictionary<int, BodyTableEntry>();

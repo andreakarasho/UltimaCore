@@ -28,7 +28,9 @@ namespace UltimaCore
 
             if (ReadUInt() != UOP_MAGIC_NUMBER)
                 throw new ArgumentException("Bad uop file");
-            Skip(8);
+            int version = ReadInt();
+            Skip(4);
+            //Skip(8);
             long nextBlock = ReadLong();
             Skip(4);
 
@@ -72,7 +74,7 @@ namespace UltimaCore
                     {
                         if (idx < 0 || idx > Entries.Length)
                             throw new IndexOutOfRangeException("hashes dictionary and files collection have different count of entries!");
-                        Entries[idx] = new UOFileIndex3D(offset + headerLength, length);
+                        Entries[idx] = new UOFileIndex3D(offset + headerLength, length, 0, decompressedLength);
 
                         // extra?
                         if (_hasExtra)
@@ -97,6 +99,10 @@ namespace UltimaCore
             } while (nextBlock != 0);
         }
 
+        internal void Uncompress()
+        {
+
+        }
        
         internal static ulong CreateHash(string s)
         {
@@ -183,6 +189,4 @@ namespace UltimaCore
             return ((ulong)esi << 32) | eax;
         }
     }
-
-   
 }

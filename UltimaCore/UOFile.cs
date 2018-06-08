@@ -27,6 +27,8 @@ namespace UltimaCore
         protected int _position;
         protected long _length;
 
+        public IntPtr StartAddress => (IntPtr)_ptr;
+
         protected virtual void Load()
         {
             FileInfo fileInfo = new FileInfo(FileName);
