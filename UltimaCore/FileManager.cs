@@ -43,6 +43,7 @@ namespace UltimaCore
             Gumps.Load();
             Fonts.Fonts.Load();
             Hues.Load();
+            TileData.Load();
         }
     }
 }
