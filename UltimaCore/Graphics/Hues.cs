@@ -13,6 +13,7 @@ namespace UltimaCore.Graphics
         private static int _huesCount;
         private static HuesGroup[] _groups;
         private static float[][] _palette;
+        private static ushort[] _radarcol;
 
         public static void Load()
         {
@@ -71,6 +72,17 @@ namespace UltimaCore.Graphics
                     }
                 }
             }
+
+            path = Path.Combine(FileManager.UoFolderPath, "radarcol.mul");
+            if (!File.Exists(path))
+                throw new FileNotFoundException();
+
+            UOFileMul radarcol = new UOFileMul(path);
+
+            int size = (int)radarcol.Length / 2;
+            _radarcol = new ushort[size];
+            for (int i = 0; i < size; i++)
+                _radarcol[i] = radarcol.ReadUShort();
         }
 
         private static readonly byte[] _table = new byte[32]
@@ -132,6 +144,9 @@ namespace UltimaCore.Graphics
             }
             return Color16To32(c);
         }
+
+        public static ushort GetRadarColorData(int c)
+            => c < _radarcol.Length ? _radarcol[c] : (ushort)0;
     }
 
 
