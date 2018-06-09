@@ -7,6 +7,28 @@ namespace UltimaCore.Graphics
 {
     public static class Verdata
     {
+
+        // FileIDs
+        //0 - map0.mul
+        //1 - staidx0.mul
+        //2 - statics0.mul
+        //3 - artidx.mul
+        //4 - art.mul
+        //5 - anim.idx
+        //6 - anim.mul
+        //7 - soundidx.mul
+        //8 - sound.mul
+        //9 - texidx.mul
+        //10 - texmaps.mul
+        //11 - gumpidx.mul
+        //12 - gumpart.mul
+        //13 - multi.idx
+        //14 - multi.mul
+        //15 - skills.idx
+        //16 - skills.mul
+        //30 - tiledata.mul
+        //31 - animdata.mul 
+
         public static UOFileIndex5D[] Patches { get; private set; }
         public static UOFileMul File { get; private set; }
 
