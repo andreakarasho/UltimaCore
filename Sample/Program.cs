@@ -35,6 +35,8 @@ namespace Sample
             var a = Fonts.GetASCII(0).GetChar('A');
 
             ushort[] pixelsgump = Gumps.GetGump(1416);
+
+            TileMatrix matrix = new TileMatrix(0, 7168, 4096);
             
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();

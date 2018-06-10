@@ -10,10 +10,10 @@ namespace UltimaCore
         private const uint UOP_MAGIC_NUMBER = 0x50594D;
 
         private readonly string _extension;
-        private readonly int _count;
+        private int _count;
         private readonly bool _hasExtra;
 
-        public UOFileUop(string path, string extension, int count, bool hasextra = false) : base(path)
+        public UOFileUop(string path, string extension, int count = 0, bool hasextra = false) : base(path)
         {
              _extension = extension; _count = count; _hasExtra = hasextra;
 
@@ -35,6 +35,8 @@ namespace UltimaCore
             Skip(4);
 
             int count = ReadInt();
+            if (_count <= 0)
+                _count = count;
 
             Entries = new UOFileIndex3D[_count];
             Dictionary<ulong, int> hashes = new Dictionary<ulong, int>();
@@ -102,6 +104,21 @@ namespace UltimaCore
         internal void Uncompress()
         {
 
+        }
+
+        public long GetOffsetFromUOP(long offset)
+        {
+            long pos = 0;
+
+            foreach (UOFileIndex3D t in Entries)
+            {
+                long currpos = pos + t.Length;
+                if (offset < currpos)
+                    return t.Offset + (offset - pos);
+                pos = currpos;
+            }
+
+            return Length;
         }
        
         internal static ulong CreateHash(string s)

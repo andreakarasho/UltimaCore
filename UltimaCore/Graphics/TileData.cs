@@ -67,8 +67,8 @@ namespace UltimaCore.Graphics
             }
         }
 
-        public static IReadOnlyCollection<LandTiles> LandData => _landData;
-        public static IReadOnlyCollection<StaticTiles> StaticData => _staticData;
+        public static LandTiles[] LandData => _landData;
+        public static StaticTiles[] StaticData => _staticData;
     }
 
 
@@ -98,6 +98,12 @@ namespace UltimaCore.Graphics
         public ushort LightIndex;
         public byte Height;
         public string Name;
+
+
+        public bool IsBackground => (Flags & TileFlag.Background) != 0;
+        public bool IsBridge => (Flags & TileFlag.Bridge) != 0;
+        public bool IsImpassable => (Flags & TileFlag.Impassable) != 0;
+        public bool IsSurface => (Flags & TileFlag.Surface) != 0;
     }
 
     // old

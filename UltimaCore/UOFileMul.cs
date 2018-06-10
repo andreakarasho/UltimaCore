@@ -23,6 +23,8 @@ namespace UltimaCore
             Load();
         }
 
+        public UOFile IdxFile => _idxFile;
+
         protected override void Load()
         {
             base.Load();
