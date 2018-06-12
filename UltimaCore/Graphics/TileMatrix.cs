@@ -71,8 +71,23 @@ namespace UltimaCore.Graphics
             _staticIndex = new UOFileIndex3D[BlockHeight * BlockWidth];
 
             int count = (int)_filestaidx.Length / 12;
+            int minlen = (int)Math.Min(_filestaidx.Length, BlockHeight * BlockWidth);
 
-            for (int i = (int)Math.Min(_filestaidx.Length, BlockHeight * BlockWidth); i < BlockHeight * BlockWidth; i++)
+            int a = 0;
+            while (_filestaidx.Position < _filestaidx.Length)
+            {
+                _staticIndex[a].Offset = _filestaidx.ReadInt();
+                _staticIndex[a].Length = _filestaidx.ReadInt();
+                _staticIndex[a].Extra = _filestaidx.ReadInt();
+
+                if (_staticIndex[a].Offset > 0)
+                {
+
+                }
+                a++;
+            }
+
+            for (int i = minlen; i < BlockHeight * BlockWidth; i++)
             {
                 _staticIndex[i].Offset = -1;
                 _staticIndex[i].Length = -1;
@@ -141,6 +156,12 @@ namespace UltimaCore.Graphics
             _landTiles[x][y] = value;
         }
 
+        /// <summary>
+        /// Important: x >> 3, y >> 3
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public Tile[] GetLandBlock(int x, int y) => GetLandBlock(x, y, true);
 
         public Tile[] GetLandBlock(int x, int y, bool patch)
@@ -204,6 +225,12 @@ namespace UltimaCore.Graphics
 
         public StaticTile[] GetPendingStatics(int x, int y) => _staticTilesToAdd == null || _staticTilesToAdd[y] == null || _staticTilesToAdd[y][x] == null ? null : _staticTilesToAdd[y][x].ToArray();
 
+        /// <summary>
+        /// Important: x >> 3, y >> 3
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         private HuedTile[][][] ReadStaticBlock(int x, int y)
         {
             int lookup = (int)_staticIndex[(x * BlockHeight) + y].Offset;

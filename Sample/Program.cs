@@ -36,7 +36,7 @@ namespace Sample
 
             ushort[] pixelsgump = Gumps.GetGump(1416);
 
-            TileMatrix matrix = new TileMatrix(0, 7168, 4096);
+            Map.Felucca.Load();
             
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
