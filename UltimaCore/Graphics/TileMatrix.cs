@@ -73,18 +73,11 @@ namespace UltimaCore.Graphics
             int count = (int)_filestaidx.Length / 12;
             int minlen = (int)Math.Min(_filestaidx.Length, BlockHeight * BlockWidth);
 
-            int a = 0;
-            while (_filestaidx.Position < _filestaidx.Length)
+            for (int i = 0; i < count; i++)
             {
-                _staticIndex[a].Offset = _filestaidx.ReadInt();
-                _staticIndex[a].Length = _filestaidx.ReadInt();
-                _staticIndex[a].Extra = _filestaidx.ReadInt();
-
-                if (_staticIndex[a].Offset > 0)
-                {
-
-                }
-                a++;
+                _staticIndex[i].Offset = _filestaidx.ReadInt();
+                _staticIndex[i].Length = _filestaidx.ReadInt();
+                _staticIndex[i].Extra = _filestaidx.ReadInt();
             }
 
             for (int i = minlen; i < BlockHeight * BlockWidth; i++)

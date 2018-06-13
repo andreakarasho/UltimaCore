@@ -37,6 +37,8 @@ namespace Sample
             ushort[] pixelsgump = Gumps.GetGump(1416);
 
             Map.Felucca.Load();
+            var aa = Map.Felucca.Render(1201, 1694, 24, 24);
+
             
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();
