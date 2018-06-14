@@ -11,6 +11,8 @@ namespace UltimaCore.Graphics
 
 
         private TileMatrix _tiles;
+        private short[][][] _cache;
+        private short[] _black;
 
         public Map(int map, int width, int height)
         {
@@ -29,13 +31,48 @@ namespace UltimaCore.Graphics
                 _tiles = new TileMatrix(Index, Width, Height);
         }
 
-        public short[] Render(int x, int y, int width, int height)
+        public void Unload()
+        { 
+            _cache = null;
+            _black = null;
+            _tiles = null;
+        }
+
+
+        public short[] GetRenderedBlock(int x, int y, int width, int height)
         {
             x = x >> 3;
             y = y >> 3;
-            //width = width << 3;
-            //height = height << 3;
 
+            TileMatrix matrix = this.Tiles;
+
+            if (x < 0 || y < 0 || x >= matrix.BlockWidth || y >= matrix.BlockHeight ||
+                (width << 3) < 0 || (height << 3) < 0 || (width << 3) >= matrix.BlockWidth || (height << 3) >= matrix.BlockHeight)
+            {
+                if (_black == null)
+                    _black = new short[64];
+                return _black;
+            }
+
+            short[][][] cache = _cache;
+
+            if (cache == null)
+            {
+                _cache = cache = new short[_tiles.BlockHeight][][];
+            }
+
+            if (cache[y] == null)
+                cache[y] = new short[_tiles.BlockWidth][];
+
+            short[] data = cache[y][x];
+
+            if (data == null)
+                cache[y][x] = data = RenderBlock(x, y, width, height);
+            return data;
+        }
+
+        private short[] RenderBlock(int x, int y, int width, int height)
+        {
             short[] result = new short[width * height * 64];
             unsafe
             {
