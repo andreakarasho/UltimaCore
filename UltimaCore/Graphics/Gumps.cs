@@ -30,11 +30,13 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] GetGump(int index)
         {
-            var entry = _file.Entries[index];
+            /*var entry = _file.Entries[index];
 
             _file.Seek(entry.Offset);
 
-            int extra = entry.Extra;
+            int extra = entry.Extra;*/
+
+            (int length, int extra, bool patcher) = _file.SeekByEntryIndex(index);
 
             if (extra == -1)
                 return null;
@@ -45,7 +47,7 @@ namespace UltimaCore.Graphics
             if (width <= 0 || height <= 0)
                 return null;
 
-            int shortToRead = entry.Length - (height * 2);
+            int shortToRead = length - (height * 2);
 
             if (_file.Length - _file.Position < (shortToRead * 2))
                 return null;

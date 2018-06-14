@@ -28,8 +28,10 @@ namespace UltimaCore.Graphics
         {
             graphic &= 0x3FFF;
 
-            UOFileIndex3D index = _file.Entries[graphic];
-            _file.Seek(index.Offset);
+            /*UOFileIndex3D index = _file.Entries[graphic];
+            _file.Seek(index.Offset);*/
+            (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic);
+
             _file.Skip(4);
 
             int width = _file.ReadShort();
@@ -42,7 +44,7 @@ namespace UltimaCore.Graphics
             for (int i = 0; i < height; i++)
                 lookups[i] = _file.ReadUShort();
 
-            ushort[] data = new ushort[index.Length - lookups.Length * 2 - 8];
+            ushort[] data = new ushort[length - lookups.Length * 2 - 8];
             for (int i = 0; i < data.Length; i++)
                 data[i] = _file.ReadUShort();
 
@@ -81,8 +83,9 @@ namespace UltimaCore.Graphics
         {
             graphic &= 0x3FFF;
 
-            UOFileIndex3D index = _file.Entries[graphic];
-            _file.Seek(index.Offset);
+            /*UOFileIndex3D index = _file.Entries[graphic];
+            _file.Seek(index.Offset);*/
+            (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic);
 
             int i = 0;
 

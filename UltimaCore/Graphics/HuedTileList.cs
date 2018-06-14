@@ -50,4 +50,34 @@ namespace UltimaCore.Graphics
             return tiles;
         }
     }
+
+    public sealed class MTileList
+    {
+        private List<MTile> _tiles;
+
+        public MTileList()
+        {
+            _tiles = new List<MTile>();
+        }
+
+        public int Count => _tiles.Count;
+        public MTile this[int idx] { get => _tiles[idx]; set => _tiles[idx] = value; }
+
+
+        public void Add(ushort id, sbyte z) => _tiles.Add(new MTile(id, z));
+        public void Add(ushort id, sbyte z, sbyte flag) => _tiles.Add(new MTile(id, z, flag));
+        public void Add(ushort id, sbyte z, sbyte flag, int unk1) => _tiles.Add(new MTile(id, z, flag, unk1));
+
+        public MTile[] ToArray()
+        {
+            MTile[] tiles = new MTile[Count];
+
+            if (_tiles.Count > 0)
+                _tiles.CopyTo(tiles);
+            _tiles.Clear();
+            return tiles;
+        }
+
+        public void Remove(int i) => _tiles.RemoveAt(i);
+    }
 }

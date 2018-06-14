@@ -49,6 +49,8 @@ namespace Sample
             }
 
             Map.Felucca.Unload();
+
+            MultiComponentList components = Multi.GetMulti(50);
             
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();

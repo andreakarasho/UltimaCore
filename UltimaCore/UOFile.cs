@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Threading.Tasks;
+using UltimaCore.Graphics;
 
 namespace UltimaCore
 {
@@ -88,6 +89,36 @@ namespace UltimaCore
         internal void Skip(int count) => _position += count;
         internal void Seek(int count) => _position = count;
         internal void Seek(long count) => _position = (int)count;
+        internal (int, int, bool) SeekByEntryIndex(int entryidx)
+        {
+            if (entryidx < 0 || entryidx >= Entries.Length)
+            {
+                return (0, 0, false);
+            }
+
+            UOFileIndex3D e = Entries[entryidx];
+            if (e.Offset < 0)
+            {
+                return (0, 0, false);
+            }
+
+            int length = e.Length & 0x7FFFFFFF;
+            int extra = e.Extra;
+
+            if ((e.Length & (1 << 31)) != 0)
+            {
+                Verdata.File.Seek(e.Offset);
+                return (length, extra, true);
+            }
+
+            if (e.Length < 0)
+            {
+                return (0, 0, false);
+            }
+
+            Seek(e.Offset);
+            return (length, extra, false);
+        }
     }
 
     public class UOFileException : Exception

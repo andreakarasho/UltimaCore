@@ -326,11 +326,12 @@ namespace UltimaCore.Graphics
 
         public unsafe void Uncompress(int index)
         {
-            var e = Entries[index];
-            Seek(e.Offset);
-            byte[] buffer = ReadArray(e.Length);
-            int clen = e.Length;
-            int dlen = e.DecompressedLength;
+            /*var e = Entries[index];
+            Seek(e.Offset);*/
+            (int length, int extra, bool patcher) = SeekByEntryIndex(index);
+            byte[] buffer = ReadArray(length);
+            int clen = length;
+            int dlen = Entries[index].DecompressedLength;
 
             byte[] decbuffer = new byte[dlen];
             using (MemoryStream ms = new MemoryStream(buffer))

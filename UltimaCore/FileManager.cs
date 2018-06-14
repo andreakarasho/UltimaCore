@@ -28,10 +28,10 @@ namespace UltimaCore
                 ClientVersion = (CLIENT_VERSION)((versInfo.ProductMajorPart << 24) | (versInfo.ProductMinorPart << 16) | (versInfo.ProductBuildPart << 8) | (versInfo.ProductPrivatePart));
             }
         }
-
         public static CLIENT_VERSION ClientVersion { get; private set; }
-        
-            
+        public static bool IsUOPInstallation => ClientVersion >= CLIENT_VERSION.CV_70240;
+        public static int GraphicMask => IsUOPInstallation ? 0xFFFF : 0x3FFFF;
+
 
         public static void LoadFiles()
         {
@@ -44,6 +44,7 @@ namespace UltimaCore
             Fonts.Fonts.Load();
             Hues.Load();
             TileData.Load();
+            Multi.Load();
         }
     }
 }
