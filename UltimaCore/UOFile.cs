@@ -72,6 +72,7 @@ namespace UltimaCore
 
         internal byte ReadByte() => _ptr[_position++];
         internal sbyte ReadSByte() => (sbyte)ReadByte();
+        internal bool ReadBool() => ReadByte() != 0;
         internal short ReadShort() => (short)(ReadByte() | (ReadByte() << 8));
         internal ushort ReadUShort() => (ushort)ReadShort();
         internal int ReadInt() => (ReadByte() | (ReadByte() << 8) | (ReadByte() << 16) | (ReadByte() << 24));

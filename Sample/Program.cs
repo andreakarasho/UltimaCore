@@ -51,6 +51,8 @@ namespace Sample
             Map.Felucca.Unload();
 
             MultiComponentList components = Multi.GetMulti(50);
+
+            var skill = Skills.GetSkill(2);
             
             Console.WriteLine(w.ElapsedMilliseconds + " ms");
             Console.ReadLine();

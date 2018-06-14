@@ -45,6 +45,7 @@ namespace UltimaCore
             Hues.Load();
             TileData.Load();
             Multi.Load();
+            Skills.Load();
         }
     }
 }
