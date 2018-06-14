@@ -41,7 +41,7 @@ namespace UltimaCore.Graphics
             {
                 fixed (short* presult = result)
                 {
-                    short* pvresut = presult;
+                    short* pvresult = presult;
 
                     for (int oy = 0, by = y; oy < height; oy++, by++)
                     {
@@ -54,7 +54,7 @@ namespace UltimaCore.Graphics
                                 short* pvdata = pdata;
 
                                 for (int i = 0; i < 64; i++)
-                                    *pvresut++ = *pvdata++;
+                                    *pvresult++ = *pvdata++;
                             }
                         }
                     }

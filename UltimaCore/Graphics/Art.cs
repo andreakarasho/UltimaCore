@@ -77,6 +77,8 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
+            graphic &= 0x3FFF;
+
             UOFileIndex3D index = _file.Entries[graphic];
             _file.Seek(index.Offset);
 
@@ -86,7 +88,7 @@ namespace UltimaCore.Graphics
             ushort[] data = new ushort[23 * 44];
             for (; i < data.Length; i++)
                 data[i] = _file.ReadUShort();
-
+            i = 0;
             fixed (ushort* pdata = pixels)
             {
                 ushort* dataRef = pdata;

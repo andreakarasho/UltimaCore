@@ -22,7 +22,7 @@ namespace Sample
             FileManager.LoadFiles();
 
             ushort[] pixels = Art.ReadStaticArt(19781);
-
+            ushort[] landpixels = Art.ReadLandArt(3);
 
             GraphicHelper.HasBody(46);
 
