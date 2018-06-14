@@ -26,6 +26,8 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadStaticArt(ushort graphic)
         {
+            graphic &= 0x3FFF;
+
             UOFileIndex3D index = _file.Entries[graphic];
             _file.Seek(index.Offset);
             _file.Skip(4);
