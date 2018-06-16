@@ -9,6 +9,8 @@ namespace UltimaCore.Graphics
     {
         private static UOFileMul _file;
 
+        private static readonly Dictionary<int, SkillEntry> _skills = new Dictionary<int, SkillEntry>();
+
         public static void Load()
         {
             string path = Path.Combine(FileManager.UoFolderPath, "Skills.mul");
@@ -17,21 +19,33 @@ namespace UltimaCore.Graphics
             if (!File.Exists(path) || !File.Exists(pathidx))
                 throw new FileNotFoundException();
 
-            _file = new UOFileMul(path, pathidx, 55, 16);
+            _file = new UOFileMul(path, pathidx, 56, 16);
+
+            int i = 0;
+            while (_file.Position < _file.Length)
+            {
+                GetSkill(i++);
+            }
         }
 
         public static SkillEntry GetSkill(int index)
         {
-            (int length, int extra, bool patched) = _file.SeekByEntryIndex(index);
-            if (length == 0)
-                return default;
-
-            return new SkillEntry()
+            if (!_skills.TryGetValue(index, out var value))
             {
-                HasButton = _file.ReadBool(),
-                Name = Encoding.UTF8.GetString(_file.ReadArray(length - 1)),
-                Index = index
-            };
+                (int length, int extra, bool patched) = _file.SeekByEntryIndex(index);
+                if (length == 0)
+                    return default;
+
+                value = new SkillEntry()
+                {
+                    HasButton = _file.ReadBool(),
+                    Name = Encoding.UTF8.GetString(_file.ReadArray(length - 1)),
+                    Index = index
+                };
+
+                _skills[index] = value;
+            }
+            return value;      
         }
     }
 
