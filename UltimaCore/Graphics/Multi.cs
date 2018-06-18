@@ -26,7 +26,7 @@ namespace UltimaCore.Graphics
             if (index >= 0 && index < 0x2000)
             {
                 (int length, int extra, bool patcher) = _file.SeekByEntryIndex(index);
-                return new MultiComponentList(_file, FileManager.ClientVersion >= CLIENT_VERSION.CV_7090 ? length / 16 : length / 12);
+                return new MultiComponentList(_file, FileManager.ClientVersion >= ClientVersions.CV_7090 ? length / 16 : length / 12);
             }
             return MultiComponentList.Empty;
         }
@@ -55,7 +55,7 @@ namespace UltimaCore.Graphics
                 _sortedTiles[i].OffsetZ = file.ReadShort();
                 _sortedTiles[i].Flags = file.ReadInt();
 
-                if (FileManager.ClientVersion >= CLIENT_VERSION.CV_7090)
+                if (FileManager.ClientVersion >= ClientVersions.CV_7090)
                     file.Skip(4);
 
                 if (_sortedTiles[i].OffsetX < _xMin)

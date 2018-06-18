@@ -21,7 +21,7 @@ namespace UltimaCore.Graphics
             UOFileMul tiledata = new UOFileMul(path);
 
 
-            bool isold = FileManager.ClientVersion < CLIENT_VERSION.CV_7090;
+            bool isold = FileManager.ClientVersion < ClientVersions.CV_7090;
 
             int staticscount = !isold ? 
                 (int)(tiledata.Length - (512 * Marshal.SizeOf<LandGroupNew>())) / Marshal.SizeOf<StaticGroupNew>()

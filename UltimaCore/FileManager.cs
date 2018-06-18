@@ -25,11 +25,11 @@ namespace UltimaCore
 
                 var versInfo = FileVersionInfo.GetVersionInfo(client.FullName);
 
-                ClientVersion = (CLIENT_VERSION)((versInfo.ProductMajorPart << 24) | (versInfo.ProductMinorPart << 16) | (versInfo.ProductBuildPart << 8) | (versInfo.ProductPrivatePart));
+                ClientVersion = (ClientVersions)((versInfo.ProductMajorPart << 24) | (versInfo.ProductMinorPart << 16) | (versInfo.ProductBuildPart << 8) | (versInfo.ProductPrivatePart));
             }
         }
-        public static CLIENT_VERSION ClientVersion { get; private set; }
-        public static bool IsUOPInstallation => ClientVersion >= CLIENT_VERSION.CV_70240;
+        public static ClientVersions ClientVersion { get; private set; }
+        public static bool IsUOPInstallation => ClientVersion >= ClientVersions.CV_70240;
         public static int GraphicMask => IsUOPInstallation ? 0xFFFF : 0x3FFFF;
 
 
