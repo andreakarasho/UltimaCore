@@ -24,7 +24,6 @@ namespace UltimaCore.Graphics
             }
         }
 
-        // TO BE OPTIMIZED
         public unsafe static ushort[] ReadStaticArt(ushort graphic, out short width, out short height)
         {
             graphic += 0x4000;
@@ -40,7 +39,54 @@ namespace UltimaCore.Graphics
             if (width <= 0 || height <= 0)
                 return null;
 
-            ushort[] lookups = new ushort[height];
+            ushort[] pixels = new ushort[width * height];
+
+            ushort* ptr = (ushort*)(_file.StartAddress + _file.Position);
+            ushort* lineoffsets = ptr;
+            byte* datastart = (byte*)(ptr) + (height * 2);
+
+            int x = 0;
+            int y = 0;
+            ushort xoffs = 0;
+            ushort run = 0;
+
+            ptr = (ushort*)(datastart + (lineoffsets[0] * 2));
+
+            while (y < height)
+            {
+                xoffs = *ptr;
+                ptr++;
+                run = *ptr;
+                ptr++;
+
+                if (xoffs + run >= 2048)
+                {
+                    pixels = new ushort[width * height];
+                    return pixels;
+                }
+                else if (xoffs + run != 0)
+                {
+                    x += xoffs;
+                    int pos = y * width + x;
+                    for (int j = 0; j < run; j++)
+                    {
+                        ushort val = *ptr++;
+                        if (val > 0)
+                        {
+                            val = (ushort)(0x8000 | val);
+                        }
+                        pixels[pos++] = val;
+                    }
+                    x += run;
+                }
+                else
+                {
+                    x = 0;
+                    y++;
+                    ptr = (ushort*)(datastart + (lineoffsets[y] * 2));
+                }
+            }
+            /*ushort[] lookups = new ushort[height];
             for (int i = 0; i < height; i++)
                 lookups[i] = _file.ReadUShort();
 
@@ -74,12 +120,11 @@ namespace UltimaCore.Graphics
                         }
                     }
                 }
-            }
+            }*/
 
             return pixels;
         }
 
-        // TO BE OPTIMIZED
         public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
             graphic &= FileManager.GraphicMask;
@@ -92,8 +137,8 @@ namespace UltimaCore.Graphics
 
             for(int i = 0; i < 22; i++)
             {
-                int start = (22 - ((int)i + 1));
-                int pos = (int)i * 44 + start;
+                int start = (22 - (i + 1));
+                int pos = i * 44 + start;
                 int end = start + ((int)i + 1) * 2;
 
                 for (int j = start; j < end; j++)
@@ -107,8 +152,8 @@ namespace UltimaCore.Graphics
             }
             for (int i = 0; i < 22; i++)
             {
-                int pos = ((int)i + 22) * 44 + (int)i;
-                int end = (int)i + (22 - (int)i) * 2;
+                int pos = (i + 22) * 44 + i;
+                int end = i + (22 - i) * 2;
 
                 for (int j = i; j < end; j++)
                 {
