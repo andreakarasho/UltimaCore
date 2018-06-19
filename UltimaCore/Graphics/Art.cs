@@ -24,6 +24,7 @@ namespace UltimaCore.Graphics
             }
         }
 
+        // TO BE OPTIMIZED
         public unsafe static ushort[] ReadStaticArt(ushort graphic, out short width, out short height)
         {
             graphic += 0x4000;
@@ -78,6 +79,7 @@ namespace UltimaCore.Graphics
             return pixels;
         }
 
+        // TO BE OPTIMIZED
         public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
             graphic &= FileManager.GraphicMask;

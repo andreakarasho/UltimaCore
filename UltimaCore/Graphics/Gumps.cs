@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace UltimaCore.Graphics
 {
@@ -14,7 +15,7 @@ namespace UltimaCore.Graphics
             string path = Path.Combine(FileManager.UoFolderPath, "gumpartLegacyMUL.uop");
             if (File.Exists(path))
             {
-                _file = new UOFileUop(path, ".tga", 0xFFFF, true);
+                _file = new UOFileUop(path, ".tga", 0x10000, true);
             }
             else
             {
@@ -52,6 +53,13 @@ namespace UltimaCore.Graphics
             }
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct GumpBlock
+        {
+            public ushort Value;
+            public ushort Run;
+        }
+
         public unsafe static ushort[] GetGump(int index, out int width, out int height)
         {
             (int length, int extra, bool patcher) = _file.SeekByEntryIndex(index);
@@ -68,49 +76,31 @@ namespace UltimaCore.Graphics
             if (width <= 0 || height <= 0)
                 return null;
 
-            int shortToRead = length - (height * 2);
-
-            if (_file.Length - _file.Position < (shortToRead * 2))
-                return null;
-
-            int[] lookups = new int[height];
-            for (int i = 0; i < lookups.Length; i++)
-                lookups[i] = _file.ReadInt();
-            int metrics = _file.Position;
-            ushort[] filedata = new ushort[shortToRead];
-            for (int i = 0; i < shortToRead; i++)
-                filedata[i] = _file.ReadUShort();
             ushort[] pixels = new ushort[width * height];
+            int* lookuplist = (int*)(_file.StartAddress + _file.Position);
 
-            fixed (ushort* line = &pixels[0])
+            for (int y = 0; y < height; y++)
             {
-                fixed (ushort* data = &filedata[0])
-                {
-                    for (int y = 0; y < height; y++)
-                    {
-                        ushort* dataref = data + (lookups[y] - height) * 2;
-                        ushort* cur = line + (y * width);
-                        ushort* end = cur + width;
+                int gsize = 0;
+                if (y < height - 1)
+                    gsize = lookuplist[y + 1] - lookuplist[y];
+                else
+                    gsize = (length / 4) - lookuplist[y];
 
-                        while (cur < end)
-                        {
-                            ushort color = *dataref++;
-                            ushort* next = cur + *dataref++;
-                            if (color == 0)
-                            {
-                                cur = next;
-                            }
-                            else
-                            {
-                                color |= 0x8000;
-                                while (cur < next)
-                                    *cur++ = color;
-                            }
-                        }
-                    }
+
+                GumpBlock* gmul = (GumpBlock*)(_file.StartAddress + _file.Position + lookuplist[y] * 4);
+                int pos = y * width;
+
+                for (int i = 0; i < gsize; i++)
+                {
+                    ushort val = gmul[i].Value;
+                    ushort a = (ushort)((val > 0 ? 0x8000 : 0) | val);
+                    int count = gmul[i].Run;
+                    for (int j = 0; j < count; j++)
+                        pixels[pos++] = a;
                 }
             }
-
+         
             return pixels;
         }
     }

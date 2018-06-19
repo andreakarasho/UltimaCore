@@ -90,6 +90,7 @@ namespace UltimaCore
 
                             Entries[idx].Offset += 8;
                             Entries[idx].Extra = extra1 << 16 | extra2;
+                            Entries[idx].Length -= 8;
 
                             Seek(curpos);
                         }

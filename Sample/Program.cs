@@ -34,7 +34,7 @@ namespace Sample
 
             var a = Fonts.GetASCII(0).GetChar('A');
 
-            ushort[] pixelsgump = Gumps.GetGump(50482, out int widthgump, out int heightgump);
+            ushort[] pixelsgump = Gumps.GetGump(0x1393, out int widthgump, out int heightgump);
 
             Map.Felucca.Load();
             int x = 1201;
@@ -49,6 +49,11 @@ namespace Sample
             }
 
             Map.Felucca.Unload();
+
+            Map.Malas.Load();
+            x = 644;
+            y = 480;
+            var aaa = Map.Malas.GetRenderedBlock(x, y, 24, 24);
 
             MultiComponentList components = Multi.GetMulti(50);
 

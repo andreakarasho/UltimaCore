@@ -46,6 +46,7 @@ namespace UltimaCore
             TileData.Load();
             Multi.Load();
             Skills.Load();
+            TextmapTextures.Load();
         }
     }
 }

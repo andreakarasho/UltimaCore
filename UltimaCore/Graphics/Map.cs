@@ -7,7 +7,11 @@ namespace UltimaCore.Graphics
     public sealed class Map : IDisposable
     {
         public static Map Felucca { get; } = new Map(0, 7168, 4096);
-
+        public static Map Trammel { get; } = new Map(1, 7168, 4096);
+        public static Map Ilshenar { get; } = new Map(2, 2304, 1600);
+        public static Map Malas { get; } = new Map(3, 2560, 2048);
+        public static Map Tokuno { get; } = new Map(4, 1448, 1448);
+        public static Map TerMur { get; } = new Map(5, 1280, 4096);
 
 
         private TileMatrix _tiles;
