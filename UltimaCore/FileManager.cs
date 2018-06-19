@@ -30,7 +30,7 @@ namespace UltimaCore
         }
         public static ClientVersions ClientVersion { get; private set; }
         public static bool IsUOPInstallation => ClientVersion >= ClientVersions.CV_70240;
-        public static int GraphicMask => IsUOPInstallation ? 0xFFFF : 0x3FFFF;
+        public static ushort GraphicMask => IsUOPInstallation ? (ushort)0xFFFF : (ushort)0x3FFF;
 
 
         public static void LoadFiles()

@@ -26,23 +26,44 @@ namespace UltimaCore.Graphics
                     _file = new UOFileMul(path, pathidx, 0x10000, 12);
                 }
             }
+
+            string pathdef = Path.Combine(FileManager.UoFolderPath, "gump.def");
+            if (!File.Exists(pathdef))
+                return;
+
+            using (StreamReader reader = new StreamReader(File.OpenRead(pathdef)))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    if (line.Length <= 0 || line[0] == '#')
+                        continue;
+                    string[] defs = line.Replace('\t', ' ').Split(' ');
+                    if (defs.Length != 3)
+                        continue;
+
+                    int ingump = int.Parse(defs[0]);
+                    int outgump = int.Parse(defs[1].Replace("{", string.Empty).Replace("}", string.Empty));
+                    int outhue = int.Parse(defs[2]);
+
+                    _file.Entries[ingump] = _file.Entries[outgump];
+                }
+            }
         }
 
-        public unsafe static ushort[] GetGump(int index)
+        public unsafe static ushort[] GetGump(int index, out int width, out int height)
         {
-            /*var entry = _file.Entries[index];
-
-            _file.Seek(entry.Offset);
-
-            int extra = entry.Extra;*/
-
             (int length, int extra, bool patcher) = _file.SeekByEntryIndex(index);
 
             if (extra == -1)
+            {
+                width = 0; height = 0;
                 return null;
+            }
 
-            int width = (extra >> 16) & 0xFFFF;
-            int height = extra & 0xFFFF;
+            width = (extra >> 16) & 0xFFFF;
+            height = extra & 0xFFFF;
 
             if (width <= 0 || height <= 0)
                 return null;

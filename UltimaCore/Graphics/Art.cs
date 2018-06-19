@@ -24,18 +24,17 @@ namespace UltimaCore.Graphics
             }
         }
 
-        public unsafe static ushort[] ReadStaticArt(ushort graphic)
+        public unsafe static ushort[] ReadStaticArt(ushort graphic, out short width, out short height)
         {
-            graphic &= 0x3FFF;
+            graphic += 0x4000;
+            graphic &= FileManager.GraphicMask;
 
-            /*UOFileIndex3D index = _file.Entries[graphic];
-            _file.Seek(index.Offset);*/
             (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic);
 
             _file.Skip(4);
 
-            int width = _file.ReadShort();
-            int height = _file.ReadShort();
+            width = _file.ReadShort();
+            height = _file.ReadShort();
 
             if (width <= 0 || height <= 0)
                 return null;
@@ -81,55 +80,78 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadLandArt(ushort graphic)
         {
-            graphic &= 0x3FFF;
+            graphic &= FileManager.GraphicMask;
 
-            /*UOFileIndex3D index = _file.Entries[graphic];
-            _file.Seek(index.Offset);*/
             (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic);
 
-            int i = 0;
+            //int i = 0;
 
             ushort[] pixels = new ushort[44 * 44];
-            ushort[] data = new ushort[23 * 44];
-            for (; i < data.Length; i++)
-                data[i] = _file.ReadUShort();
-            i = 0;
-            fixed (ushort* pdata = pixels)
+
+            for(int i = 0; i < 22; i++)
             {
-                ushort* dataRef = pdata;
+                int start = (22 - ((int)i + 1));
+                int pos = (int)i * 44 + start;
+                int end = start + ((int)i + 1) * 2;
 
-                int count = 2;
-                int offset = 21;
-
-                for (int y = 0; y < 22; y++, count += 2, offset--, dataRef += 44)
+                for (int j = start; j < end; j++)
                 {
-                    ushort* start = dataRef + offset;
-                    ushort* end = start + count;
+                    ushort val = _file.ReadUShort();
+                    if (val > 0)
+                        val = (ushort)(0x8000 | val);
 
-                    while (start < end)
-                    {
-                        ushort color = data[i++];
-                        *start++ = (ushort)(color | 0x8000);
-                    }
-                }
-
-                count = 44;
-                offset = 0;
-
-                for (int y = 0; y < 22; y++, count -= 2, offset++, dataRef += 44)
-                {
-                    ushort* start = dataRef + offset;
-                    ushort* end = start + count;
-
-                    while (start < end)
-                    {
-                        ushort color = data[i++];
-                        *start++ = (ushort)(color | 0x8000);
-                    }
+                    pixels[pos++] = val;
                 }
             }
+            for (int i = 0; i < 22; i++)
+            {
+                int pos = ((int)i + 22) * 44 + (int)i;
+                int end = (int)i + (22 - (int)i) * 2;
 
-            return pixels;
+                for (int j = i; j < end; j++)
+                {
+                    ushort val = _file.ReadUShort();
+                    if (val > 0)
+                        val = (ushort)(0x8000 | val);
+
+                    pixels[pos++] = val;
+                }
+            }
+            
+                 /* ushort[] data = new ushort[length / 2];
+                  for (; i < data.Length; i++)
+                      data[i] = _file.ReadUShort();
+                  i = 0;
+                  fixed (ushort* pdata = pixels)
+                  {
+                      ushort* dataRef = pdata;
+
+                      int count = 2;
+                      int offset = 21;
+
+                      for (int y = 0; y < 22; y++, count += 2, offset--, dataRef += 44)
+                      {
+                          ushort* start = dataRef + offset;
+                          ushort* end = start + count;
+
+                          while (start < end)
+                              *start++ = (ushort)(data[i++] | 0x8000);
+                      }
+
+                      count = 44;
+                      offset = 0;
+
+                      for (int y = 0; y < 22; y++, count -= 2, offset++, dataRef += 44)
+                      {
+                          ushort* start = dataRef + offset;
+                          ushort* end = start + count;
+
+                          while (start < end)
+                              *start++ = (ushort)(data[i++] | 0x8000);
+                      }
+                  }
+                  */
+                return pixels;
         }
     }
 }

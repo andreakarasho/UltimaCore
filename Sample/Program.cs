@@ -21,7 +21,7 @@ namespace Sample
             FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
             FileManager.LoadFiles();
 
-            ushort[] pixels = Art.ReadStaticArt(19781);
+            ushort[] pixels = Art.ReadStaticArt(8298, out short width, out short height);
             ushort[] landpixels = Art.ReadLandArt(3);
 
             GraphicHelper.HasBody(46);
@@ -34,7 +34,7 @@ namespace Sample
 
             var a = Fonts.GetASCII(0).GetChar('A');
 
-            ushort[] pixelsgump = Gumps.GetGump(1416);
+            ushort[] pixelsgump = Gumps.GetGump(50482, out int widthgump, out int heightgump);
 
             Map.Felucca.Load();
             int x = 1201;
