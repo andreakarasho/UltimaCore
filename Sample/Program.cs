@@ -21,7 +21,7 @@ namespace Sample
             FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
             FileManager.LoadFiles();
 
-            ushort[] pixels = Art.ReadStaticArt(24682, out short width, out short height);
+            ushort[] pixels = Art.ReadStaticArt(0x206A, out short width, out short height);
             ushort[] landpixels = Art.ReadLandArt(3);
 
             GraphicHelper.HasBody(46);

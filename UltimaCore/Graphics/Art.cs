@@ -26,10 +26,10 @@ namespace UltimaCore.Graphics
 
         public unsafe static ushort[] ReadStaticArt(ushort graphic, out short width, out short height)
         {
-            graphic += 0x4000;
+            //graphic += 0x4000;
             graphic &= FileManager.GraphicMask;
 
-            (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic);
+            (int length, int extra, bool patcher) = _file.SeekByEntryIndex(graphic + 0x4000);
 
             _file.Skip(4);
 
@@ -86,6 +86,23 @@ namespace UltimaCore.Graphics
                     ptr = (ushort*)(datastart + (lineoffsets[y] * 2));
                 }
             }
+
+            if ((graphic >= 0x2053 && graphic <= 0x2062)
+                || (graphic >= 0x206A && graphic <= 0x2079))
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    pixels[i] = 0;
+                    pixels[(height - 1) * width + i] = 0;
+                }
+
+                for (int i = 0; i < height; i++)
+                {
+                    pixels[i * width] = 0;
+                    pixels[i * width + width - 1] = 0;
+                }
+            }
+
             /*ushort[] lookups = new ushort[height];
             for (int i = 0; i < height; i++)
                 lookups[i] = _file.ReadUShort();
