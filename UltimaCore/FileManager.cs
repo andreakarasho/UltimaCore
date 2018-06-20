@@ -47,6 +47,7 @@ namespace UltimaCore
             Multi.Load();
             Skills.Load();
             TextmapTextures.Load();
+            SpecialKeywords.Load();
         }
     }
 }
