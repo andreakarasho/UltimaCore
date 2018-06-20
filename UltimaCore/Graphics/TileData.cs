@@ -72,7 +72,7 @@ namespace UltimaCore.Graphics
     }
 
 
-
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct LandTiles
     {
         public TileFlag Flags;
@@ -80,6 +80,7 @@ namespace UltimaCore.Graphics
         public string Name;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct LandGroup
     {
         public uint Unknown;
@@ -87,6 +88,7 @@ namespace UltimaCore.Graphics
         public LandTiles[] Tiles;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct StaticTiles
     {
         public TileFlag Flags;
