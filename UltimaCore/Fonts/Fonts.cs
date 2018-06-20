@@ -118,7 +118,7 @@ namespace UltimaCore.Fonts
     public class UniFont : IFont
     {
         private readonly UniChar _null = new UniChar();
-        private UniChar[] _chars;
+        private readonly UniChar[] _chars;
         private UOFile _file;
 
         public UniFont()

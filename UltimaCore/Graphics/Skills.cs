@@ -11,8 +11,13 @@ namespace UltimaCore.Graphics
 
         private static readonly Dictionary<int, SkillEntry> _skills = new Dictionary<int, SkillEntry>();
 
+        public static int SkillsCount => _skills.Count;
+
         public static void Load()
         {
+            if (SkillsCount > 0)
+                return;
+
             string path = Path.Combine(FileManager.UoFolderPath, "Skills.mul");
             string pathidx = Path.Combine(FileManager.UoFolderPath, "Skills.idx");
 
@@ -46,7 +51,7 @@ namespace UltimaCore.Graphics
                 _skills[index] = value;
             }
             return value;      
-        }
+        }        
     }
 
     public struct SkillEntry
