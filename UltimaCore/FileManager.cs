@@ -35,6 +35,8 @@ namespace UltimaCore
 
         public static void LoadFiles()
         {
+            MapO.Load();
+
             Art.Load();
             BodyDef.Load();
             GraphicHelper.Load();

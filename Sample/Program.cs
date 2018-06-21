@@ -21,6 +21,11 @@ namespace Sample
             FileManager.UoFolderPath = @"E:\Giochi\Ultima Online Classic ORION";
             FileManager.LoadFiles();
 
+
+            Map.Malas.Load();
+            
+            var aadwa = Map.Malas.Tiles.GetLandTile(944 >> 8, 480 >> 8);
+
             ushort[] pixels = Art.ReadStaticArt(0x206A, out short width, out short height);
             ushort[] landpixels = Art.ReadLandArt(3);
 

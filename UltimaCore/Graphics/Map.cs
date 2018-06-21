@@ -13,6 +13,19 @@ namespace UltimaCore.Graphics
         public static Map Tokuno { get; } = new Map(4, 1448, 1448);
         public static Map TerMur { get; } = new Map(5, 1280, 4096);
 
+        public static Map GetMap(int idx)
+        {
+            switch (idx)
+            {
+                default:
+                case 0: return Felucca;
+                case 1: return Trammel;
+                case 2: return Ilshenar;
+                case 3: return Malas;
+                case 4: return Tokuno;
+                case 5: return TerMur;
+            }
+        }
 
         private TileMatrix _tiles;
         private short[][][] _cache;

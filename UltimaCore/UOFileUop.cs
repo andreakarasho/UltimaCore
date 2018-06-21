@@ -53,10 +53,13 @@ namespace UltimaCore
 
             Seek(nextBlock);
 
+            int total = 0;
+
             do
             {
                 int filesCount = ReadInt();
                 nextBlock = ReadLong();
+                total += filesCount;
 
                 for (int i = 0; i < filesCount; i++)
                 {
