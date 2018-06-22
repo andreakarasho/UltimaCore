@@ -11,9 +11,14 @@ namespace UltimaCore.Graphics
         private static UOFileMul _file;
 
         private static int _huesCount;
-        private static HuesGroup[] _groups;
-        private static float[][] _palette;
+        private static FloatHues[] _palette;
         private static ushort[] _radarcol;
+        private static HuesGroup[] _huesRange;
+
+        public static HuesGroup[] HuesRange => _huesRange;
+        public static int HuesCount => _huesCount;
+        public static FloatHues[] Palette => _palette;
+        public static ushort[] RadarCol => _radarcol;
 
         public static void Load()
         {
@@ -23,55 +28,18 @@ namespace UltimaCore.Graphics
 
             _file = new UOFileMul(path);
 
-            int entrycount = (int)_file.Length / 708;
-            if (entrycount > 375)
-                entrycount = 375;
 
-            _huesCount = 0;
-            _groups = new HuesGroup[entrycount];
+            int groupSize = Marshal.SizeOf<HuesGroup>();
 
-            for (int entry = 0; entry < entrycount; entry++)
-            {
-                _groups[entry] = new HuesGroup();
-                _groups[entry].Header = _file.ReadUInt();
-                _groups[entry].Entries = new HuesBlock[8];
-                for (int j = 0; j < 8; j++)
-                {
-                    _huesCount++;
+            int entrycount = (int)_file.Length / groupSize;
 
-                    _groups[entry].Entries[j] = new HuesBlock();
-                    _groups[entry].Entries[j].ColorTable = new ushort[32];
+            _huesCount = entrycount * 8;
+            _huesRange = new HuesGroup[entrycount];
 
-                    for (int i = 0; i < 32; i++)
-                    {
-                        _groups[entry].Entries[j].ColorTable[i] = _file.ReadUShort();
-                    }
-
-                    _groups[entry].Entries[j].Start = _file.ReadUShort();
-                    _groups[entry].Entries[j].End = _file.ReadUShort();
-                    _groups[entry].Entries[j].Name = Encoding.UTF8.GetString(_file.ReadArray(20));
-
-                }
-            }
-
-            _palette = new float[_huesCount][];
+            ulong addr = (ulong)_file.StartAddress;
 
             for (int i = 0; i < entrycount; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    float[] a = _palette[(i * 8) + j] = new float[32 * 3];
-
-                    for (int h = 0; h < 32; h++)
-                    {
-                        int idx = h * 3;
-                        ushort c = _groups[i].Entries[j].ColorTable[h];
-                        a[idx] = (((c >> 10) & 0x1F) / 31.0f);
-                        a[idx + 1] = (((c >> 5) & 0x1F) / 31.0f);
-                        a[idx + 2] = ((c & 0x1F) / 31.0f);
-                    }
-                }
-            }
+                _huesRange[i] = Marshal.PtrToStructure<HuesGroup>((IntPtr)(addr + (ulong)(i * groupSize)));
 
             path = Path.Combine(FileManager.UoFolderPath, "radarcol.mul");
             if (!File.Exists(path))
@@ -83,7 +51,10 @@ namespace UltimaCore.Graphics
             _radarcol = new ushort[size];
             for (int i = 0; i < size; i++)
                 _radarcol[i] = radarcol.ReadUShort();
+
+            CreateHuesPalette();
         }
+
 
         private static readonly byte[] _table = new byte[32]
         {
@@ -92,6 +63,48 @@ namespace UltimaCore.Graphics
             0x83, 0x8B, 0x94, 0x9C, 0xA4, 0xAC, 0xB4, 0xBD,
             0xC5, 0xCD, 0xD5, 0xDE, 0xE6, 0xEE, 0xF6, 0xFF
         };
+
+        public static void CreateHuesPalette()
+        {
+            _palette = new FloatHues[_huesCount];
+            int entrycount = _huesCount / 8;
+            for (int i = 0; i < entrycount; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    int idx = (i * 8) + j;
+
+                    _palette[idx].Palette = new float[32 * 3];
+
+                    for (int h = 0; h < 32; h++)
+                    {
+                        int idx1 = h * 3;
+                        ushort c = _huesRange[i].Entries[j].ColorTable[h];
+                        _palette[idx].Palette[idx1] = (((c >> 10) & 0x1F) / 31.0f);
+                        _palette[idx].Palette[idx1 + 1] = (((c >> 5) & 0x1F) / 31.0f);
+                        _palette[idx].Palette[idx1 + 2] = ((c & 0x1F) / 31.0f);
+                    }
+                }
+            }
+        }
+
+        public static unsafe void SetHuesBlock(int index, IntPtr ptr)
+        {
+            VerdataHuesGroup group = Marshal.PtrToStructure<VerdataHuesGroup>((IntPtr)ptr);
+            SetHuesBlock(index, group);
+        }
+
+        public static void SetHuesBlock(int index, VerdataHuesGroup group)
+        {
+            if (index < 0 || index >= _huesCount)
+                return;
+
+            _huesRange[index].Header = group.Header;
+            for (int i = 0; i < 8; i++)
+            {
+                _huesRange[index].Entries[i].ColorTable = group.Entries[i].ColorTable;
+            }
+        }
 
         public static uint Color16To32(ushort c)
             => (uint)(_table[(c >> 10) & 0x1F] |
@@ -114,9 +127,22 @@ namespace UltimaCore.Graphics
                 int g = color / 8;
                 int e = color % 8;
 
-                return _groups[g].Entries[e].ColorTable[(c >> 10) & 0x1F];
+                return _huesRange[g].Entries[e].ColorTable[(c >> 10) & 0x1F];
             }
             return c;
+        }
+
+        public static uint GetPolygoneColor(ushort c, ushort color)
+        {
+            if (color != 0 && color < _huesCount)
+            {
+                color--;
+                int g = color / 8;
+                int e = color % 8;
+
+                return Color16To32(_huesRange[g].Entries[e].ColorTable[c]);
+            }
+            return 0xFF010101;
         }
 
         public static uint GetUnicodeFontColor(ushort c, ushort color)
@@ -127,7 +153,7 @@ namespace UltimaCore.Graphics
                 int g = color / 8;
                 int e = color % 8;
 
-                return _groups[g].Entries[e].ColorTable[8];
+                return _huesRange[g].Entries[e].ColorTable[8];
             }
             return Color16To32(c);
         }
@@ -140,27 +166,50 @@ namespace UltimaCore.Graphics
                 int g = color / 8;
                 int e = color % 8;
 
-                return Color16To32(_groups[g].Entries[e].ColorTable[(c >> 10) & 0x1F]);
+                return Color16To32(_huesRange[g].Entries[e].ColorTable[(c >> 10) & 0x1F]);
+            }
+            return Color16To32(c);
+        }
+
+        public static uint GetPartialHueColor(ushort c, ushort color)
+        {
+            if (color != 0 && color < _huesCount)
+            {
+                color--;
+                int g = color / 8;
+                int e = color % 8;
+
+                uint cl = Color16To32(c);
+
+                if (GetR(cl) == GetG(cl) && GetB(cl) == GetG(cl))
+                    return Color16To32(_huesRange[g].Entries[e].ColorTable[(c >> 10) & 0x1F]);
+
+                return cl;
             }
             return Color16To32(c);
         }
 
         public static ushort GetRadarColorData(int c)
             => c < _radarcol.Length ? _radarcol[c] : (ushort)0;
+
+        private static byte GetR(uint rgb) => LOBYTE(rgb);
+        private static byte GetG(uint rgb) => LOBYTE(rgb >> 8);
+        private static byte GetB(uint rgb) => LOBYTE(rgb >> 16);
+
+        private static byte LOBYTE(uint b) => (byte)(b & 0xff);
     }
 
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct HuesBlock
+    public struct HuesBlock
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public ushort[] ColorTable;
-        public ushort Start;
-        public ushort End;
-
-        [MarshalAs(UnmanagedType.LPStr, SizeConst = 20)]
-        public string Name;
+        public ushort TableStart;
+        public ushort TableEnd;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
+        public char[] Name;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -171,5 +220,31 @@ namespace UltimaCore.Graphics
         public HuesBlock[] Entries;
     }
 
-    
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct VerdataHuesBlock
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+        public ushort[] ColorTable;
+        public ushort TableStart;
+        public ushort TableEnd;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
+        public char[] Name;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+        public ushort[] Unk;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct VerdataHuesGroup
+    {
+        public uint Header;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public HuesBlock[] Entries;
+    }
+
+    public struct FloatHues
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 96)]
+        public float[] Palette;
+    }
 }
