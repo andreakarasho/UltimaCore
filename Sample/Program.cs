@@ -60,7 +60,7 @@ namespace Sample
             y = 480;
             var aaa = Map.Malas.GetRenderedBlock(x, y, 24, 24);
 
-            MultiComponentList components = Multi.GetMulti(50);
+           // MultiComponentList components = Multi.GetMulti(50);
 
             var skill = Skills.GetSkill(2);
             
