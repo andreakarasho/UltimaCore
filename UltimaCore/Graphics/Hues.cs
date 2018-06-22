@@ -51,8 +51,6 @@ namespace UltimaCore.Graphics
             _radarcol = new ushort[size];
             for (int i = 0; i < size; i++)
                 _radarcol[i] = radarcol.ReadUShort();
-
-            CreateHuesPalette();
         }
 
 
